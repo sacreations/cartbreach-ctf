@@ -32,6 +32,9 @@ services:
       - storefront-web
       - payment-gw
       - staging-repo
+      - platform-api
+      - participant-portal
+      - admin-dashboard
     deploy:
       resources:
         limits:
@@ -118,7 +121,57 @@ services:
           cpus: "0.50"
           memory: 384M
 
-  # 6. Database Backend
+  # 6. Trusted platform API for participant/admin interfaces
+  platform-api:
+    build: ./services/platform-api
+    container_name: cartbreach-platform-api
+    restart: on-failure:5
+    environment:
+      - DATABASE_URL=postgresql://cart_user:cart_db_pass_2026!@postgres-data:5432/cartbreach
+    networks:
+      - cartbreach-public
+      - cartbreach-backend
+    depends_on:
+      - postgres-data
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 192M
+
+  participant-portal:
+    build: ./apps/participant-portal
+    container_name: cartbreach-participant-portal
+    restart: on-failure:5
+    networks:
+      - cartbreach-public
+    depends_on:
+      - platform-api
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  admin-dashboard:
+    build: ./apps/admin-dashboard
+    container_name: cartbreach-admin-dashboard
+    restart: on-failure:5
+    networks:
+      - cartbreach-public
+    depends_on:
+      - platform-api
+    deploy:
+      resources:
+        limits:
+          cpus: "0.25"
+          memory: 128M
+
+  # 10. Database Backend
   postgres-data:
     image: postgres:16-alpine
     container_name: cartbreach-postgres

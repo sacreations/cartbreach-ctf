@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CartBreach // Participant Portal</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar"><a class="brand" href="/">CART<span>BREACH</span></a><span class="pill">PARTICIPANT PORTAL</span></header>
+    <section class="hero"><p class="eyebrow">IE3132 // PENETRATION TESTING LAB</p><h1>Trace the breach.<br><em>Recover the truth.</em></h1><p class="lede">A six-stage supply-chain infiltration exercise. Investigate the exposed perimeter, follow the evidence, and submit a flag at every stage.</p><a class="button" href="#challenges">Enter challenge board <span>→</span></a></section>
+    <section id="challenges"><div class="section-heading"><div><p class="eyebrow">MISSION CONTROL</p><h2>Challenge board</h2></div><div class="score"><small>TEAM SCORE</small><strong>0 <span>PTS</span></strong></div></div><div id="challenge-list" class="challenge-grid"><p class="muted">Loading challenge telemetry…</p></div></section>
+    <footer><span>AUTHORIZED LAB ENVIRONMENT ONLY</span><a href="/connection.html">Connection guide</a></footer>
+  </main>
+  <script>
+    fetch('/api/v1/challenges').then(r => r.json()).then(({challenges}) => {
+      document.querySelector('#challenge-list').innerHTML = challenges.map(c => `<article class="challenge ${c.status}"><div class="stage">${String(c.id).padStart(2, '0')}</div><div><p class="status">${c.status}</p><h3>${c.title}</h3><p class="points">${c.points} points</p></div><span class="arrow">${c.status === 'available' ? '→' : '×'}</span></article>`).join('');
+    }).catch(() => { document.querySelector('#challenge-list').innerHTML = '<p class="error">Platform API unavailable. Check the environment status.</p>'; });
+  </script>
+</body>
+</html>

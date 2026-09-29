@@ -14,6 +14,9 @@ CartBreach is a 6-stage Capture The Flag (CTF) play box designed for the **IE313
   - `payment-gw`: Python Flask asynchronous payment gateway (Stage 3: CRYPTO-01 weak HMAC-SHA256).
   - `order-inventory-api`: Python FastAPI administrative API with command injection and root cron job (Stage 5: SYS-01 & Stage 6: ROOT-01).
   - `postgres-data`: PostgreSQL 16 database backend.
+  - `platform-api`: Trusted FastAPI control plane for challenge metadata and health checks.
+  - `participant-portal`: Participant challenge board at `portal.cartbreach.local`.
+  - `admin-dashboard`: Operations dashboard at `admin.cartbreach.local`.
 
 ---
 
@@ -36,10 +39,26 @@ CartBreach is a 6-stage Capture The Flag (CTF) play box designed for the **IE313
 - Docker Engine 24.x+ & Docker Compose v2
 - Python 3.10+ (for running the automated test suite)
 
-### 1. Launch the CTF Stack
+### 1. Configure the local environment
+
+`cartbreach.env` contains local challenge credentials and must not be committed. Copy it from a secure local source or create an untracked file with the required values. Docker Compose automatically reads `.env`; when using `cartbreach.env` explicitly, run:
+
+```bash
+docker compose --env-file cartbreach.env up -d --build
+```
+
+Never publish real credentials, production secrets, or private keys in this repository. The values used by this educational CTF are intentionally weak challenge fixtures, but they should still remain untracked.
+
+### 2. Launch the CTF Stack
 ```bash
 cd cartbreach-ctf
-docker compose up -d --build
+docker compose --env-file cartbreach.env up -d --build
+```
+
+For local host-based routing, add these entries to your hosts file:
+
+```text
+127.0.0.1 cartbreach.local portal.cartbreach.local admin.cartbreach.local git.cartbreach.local
 ```
 
 ### 2. Verify Health

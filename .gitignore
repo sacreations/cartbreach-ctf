@@ -14,7 +14,9 @@ venv/
 
 # Environment secrets
 .env
+*.env
 *.local
+cartbreach.env
 
 # Database volatile volumes
 pgdata/
