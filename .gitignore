@@ -1,0 +1,28 @@
+# Node / Frontend
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+env/
+venv/
+
+# Environment secrets
+.env
+*.local
+
+# Database volatile volumes
+pgdata/
+*.sqlite3
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
