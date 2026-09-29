@@ -41,7 +41,13 @@ CartBreach is a 6-stage Capture The Flag (CTF) play box designed for the **IE313
 
 ### 1. Configure the local environment
 
-`cartbreach.env` contains local challenge credentials and must not be committed. Copy it from a secure local source or create an untracked file with the required values. Docker Compose automatically reads `.env`; when using `cartbreach.env` explicitly, run:
+`cartbreach.env` contains local challenge credentials and must not be committed. Create it from the tracked template, then replace the placeholder values:
+
+```bash
+cp cartbreach.env.example cartbreach.env
+```
+
+Docker Compose automatically reads `.env`; when using `cartbreach.env` explicitly, run:
 
 ```bash
 docker compose --env-file cartbreach.env up -d --build
