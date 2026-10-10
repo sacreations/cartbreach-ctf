@@ -111,10 +111,6 @@ services:
       - INTERNAL_TOKEN=cb_internal_svc_t0k3n_4dm1n
     networks:
       - cartbreach-backend
-    cap_drop:
-      - ALL
-    cap_add:
-      - NET_BIND_SERVICE
     deploy:
       resources:
         limits:

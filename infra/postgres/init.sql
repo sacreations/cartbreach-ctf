@@ -34,8 +34,8 @@ CREATE TABLE IF NOT EXISTS system_service_keys (
 -- Users: guest (password: guest123), admin (password: harvest2026)
 -- Hashes pre-generated with bcrypt cost 10
 INSERT INTO users (username, password_hash, email, role, status, auth_provider) VALUES
-    ('guest', '$2b$10$K8P2YVmGxLqNt3RwZuB1eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'guest@cartbreach.local', 'guest', 'approved', 'local'),
-    ('admin', '$2b$10$w3vQ9Xm4KpLzRnT2YuB0eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'admin@cartbreach.local', 'admin', 'approved', 'local');
+    ('guest', '$2b$10$j.wY/4CoTEL7iHu.ktHHmO/zCPz.TQ3c.G43fdzyhmV/Ckg6slQCe', 'guest@cartbreach.local', 'guest', 'approved', 'local'),
+    ('admin', '$2b$10$4dtUyWRDSrNNMHhcLGfDmOtRRIFDvmKO9PxBYjTNhsiKaKxN2Q0G2', 'admin@cartbreach.local', 'admin', 'approved', 'local');
 
 -- Orders: order 1001 contains Stage 2 flag in shipping_notes (only admin's order)
 INSERT INTO orders (order_id, customer_id, item, amount, status, shipping_notes) VALUES
