@@ -3,9 +3,13 @@
 CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     username VARCHAR(64) UNIQUE NOT NULL,
-    password_hash VARCHAR(128) NOT NULL,
+    password_hash VARCHAR(128),
     email VARCHAR(128),
-    role VARCHAR(16) DEFAULT 'guest'
+    role VARCHAR(16) DEFAULT 'guest',
+    status VARCHAR(32) DEFAULT 'approved',
+    auth_provider VARCHAR(32) DEFAULT 'local',
+    google_sub VARCHAR(255) UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS orders (
@@ -29,9 +33,9 @@ CREATE TABLE IF NOT EXISTS system_service_keys (
 
 -- Users: guest (password: guest123), admin (password: harvest2026)
 -- Hashes pre-generated with bcrypt cost 10
-INSERT INTO users (username, password_hash, email, role) VALUES
-    ('guest', '$2b$10$K8P2YVmGxLqNt3RwZuB1eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'guest@cartbreach.local', 'guest'),
-    ('admin', '$2b$10$w3vQ9Xm4KpLzRnT2YuB0eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'admin@cartbreach.local', 'admin');
+INSERT INTO users (username, password_hash, email, role, status, auth_provider) VALUES
+    ('guest', '$2b$10$K8P2YVmGxLqNt3RwZuB1eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'guest@cartbreach.local', 'guest', 'approved', 'local'),
+    ('admin', '$2b$10$w3vQ9Xm4KpLzRnT2YuB0eOQkJ5hMvXsYdFnCpA7iWo6lTe9rI0mUq', 'admin@cartbreach.local', 'admin', 'approved', 'local');
 
 -- Orders: order 1001 contains Stage 2 flag in shipping_notes (only admin's order)
 INSERT INTO orders (order_id, customer_id, item, amount, status, shipping_notes) VALUES

@@ -5,16 +5,178 @@
 <header class="topbar"><a class="brand" href="/">CART<span>BREACH</span></a><span class="pill">CONTROL PLANE / ADMIN</span></header>
 <section class="hero"><p class="eyebrow">OPERATIONS // LIVE ENVIRONMENT</p><h1>Keep the<br><em>breach alive.</em></h1><p class="lede">Monitor the challenge stack, inspect participant activity, and restore the baseline environment when the lab needs a clean slate.</p></section>
 <section id="login-panel" class="auth-panel" hidden><p class="eyebrow">CONTROL PLANE ACCESS</p><h2>Sign in to continue</h2><form id="login-form"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Sign in <span>→</span></button><p id="login-error" class="error" role="alert"></p></form></section>
-<section id="dashboard" hidden><div class="section-heading"><div><p class="eyebrow">SERVICE HEALTH</p><h2>Environment status</h2><p class="muted">Signed in as <strong id="username"></strong> · <button id="logout" class="link-button" type="button">Log out</button></p></div><span class="live">● LIVE</span></div><div class="metrics"><div><small>PLATFORM API</small><strong id="api-status">CHECKING</strong></div><div><small>ACTIVE TEAMS</small><strong>—</strong></div><div><small>SUBMISSIONS</small><strong>—</strong></div></div><div class="service-list"><div><span class="dot up"></span><b>platform-api</b><span>healthy</span><code>:8100</code></div><div><span class="dot up"></span><b>postgres-data</b><span>healthy</span><code>:5432 / internal</code></div><div><span class="dot pending"></span><b>challenge services</b><span>awaiting telemetry</span><code>6 stages</code></div></div></section>
+<section id="dashboard" hidden>
+  <div class="section-heading">
+    <div>
+      <p class="eyebrow">SERVICE HEALTH</p>
+      <h2>Environment status</h2>
+      <p class="muted">Signed in as <strong id="username"></strong> · <button id="logout" class="link-button" type="button">Log out</button></p>
+    </div>
+    <span class="live">● LIVE</span>
+  </div>
+  <div class="metrics">
+    <div><small>PLATFORM API</small><strong id="api-status">CHECKING</strong></div>
+    <div><small>PENDING APPROVALS</small><strong id="pending-count">0</strong></div>
+    <div><small>ACTIVE TEAMS</small><strong>—</strong></div>
+    <div><small>SUBMISSIONS</small><strong>—</strong></div>
+  </div>
+  <div class="service-list">
+    <div><span class="dot up"></span><b>platform-api</b><span>healthy</span><code>:8100</code></div>
+    <div><span class="dot up"></span><b>postgres-data</b><span>healthy</span><code>:5432 / internal</code></div>
+    <div><span class="dot pending"></span><b>challenge services</b><span>awaiting telemetry</span><code>6 stages</code></div>
+  </div>
+  <div class="users-table-card">
+    <div class="table-title-bar">
+      <h3>User Management & Approval Queue</h3>
+      <button id="refresh-users" class="link-button" type="button">Refresh list ↻</button>
+    </div>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Provider</th>
+          <th>Role</th>
+          <th>Status</th>
+          <th>Registered</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="user-rows">
+        <tr><td colspan="6" class="muted" style="text-align:center;">Loading user accounts…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
 <section id="denied" class="auth-panel" hidden><p class="eyebrow">ACCESS DENIED</p><h2>Admin role required</h2><p class="muted">This account can use the participant portal but cannot inspect operations telemetry.</p><button id="denied-logout" class="button" type="button">Log out</button></section>
 <footer><span>ADMIN ACCESS // AUDIT LOGGED</span><span>Environment reset is operator-managed</span></footer>
 </main><script>
 const loginPanel=document.querySelector('#login-panel'), dashboard=document.querySelector('#dashboard'), denied=document.querySelector('#denied'), form=document.querySelector('#login-form'), error=document.querySelector('#login-error');
-async function request(url, options){const response=await fetch(url,{credentials:'same-origin',...options});if(!response.ok){const exception=new Error(response.status===401?'Session expired. Sign in again.':response.status===403?'Admin role required.':'Platform API unavailable.');exception.status=response.status;throw exception;}return response.json();}
+const userRows = document.querySelector('#user-rows');
+const pendingCount = document.querySelector('#pending-count');
+
+async function request(url, options){
+  const response=await fetch(url,{credentials:'same-origin',...options});
+  if(!response.ok){
+    const data = await response.json().catch(() => ({}));
+    const message = data.detail || (response.status===401?'Session expired. Sign in again.':response.status===403?'Admin role required.':'Platform API unavailable.');
+    const exception=new Error(message);
+    exception.status=response.status;
+    throw exception;
+  }
+  return response.json();
+}
+
 function showLogin(message=''){loginPanel.hidden=false;dashboard.hidden=true;denied.hidden=true;error.textContent=message;}
 function showDenied(){loginPanel.hidden=true;dashboard.hidden=true;denied.hidden=false;}
-async function showDashboard(user){loginPanel.hidden=true;denied.hidden=true;dashboard.hidden=false;document.querySelector('#username').textContent=user.username;try{await request('/api/v1/admin/health');document.querySelector('#api-status').textContent='HEALTHY';}catch(exception){if(exception.status===403){showDenied();return;}document.querySelector('#api-status').textContent='OFFLINE';}}
-async function signIn(event){event.preventDefault();error.textContent='';try{const {user}=await request('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});form.reset();await showDashboard(user);}catch(exception){error.textContent=exception.message;}}
-async function signOut(){await fetch('/api/v1/auth/logout',{method:'POST',credentials:'same-origin'});showLogin();}
-form.addEventListener('submit',signIn);document.querySelector('#logout').addEventListener('click',signOut);document.querySelector('#denied-logout').addEventListener('click',signOut);request('/api/v1/auth/me').then(({user})=>user.role==='admin'?showDashboard(user):showDenied()).catch(()=>showLogin());
+
+function renderUsers(users){
+  const pending = users.filter(u => u.status === 'pending').length;
+  pendingCount.textContent = pending;
+
+  if(!users.length){
+    userRows.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">No users registered.</td></tr>';
+    return;
+  }
+
+  userRows.replaceChildren(...users.map(u => {
+    const tr = document.createElement('tr');
+    const registered = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+    const email = u.email ? `<small class="muted" style="display:block;">${u.email}</small>` : '';
+
+    let actionButtons = '';
+    if(u.status === 'pending'){
+      actionButtons = `
+        <button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Approve</button>
+        <button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Reject</button>
+      `;
+    } else if(u.status === 'rejected'){
+      actionButtons = `<button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Re-approve</button>`;
+    } else if(u.role !== 'admin'){
+      actionButtons = `<button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Revoke</button>`;
+    } else {
+      actionButtons = `<span class="muted">—</span>`;
+    }
+
+    tr.innerHTML = `
+      <td><b>${u.username}</b>${email}</td>
+      <td><code>${u.auth_provider || 'local'}</code></td>
+      <td><span>${u.role}</span></td>
+      <td><span class="badge-status ${u.status || 'approved'}">${u.status || 'approved'}</span></td>
+      <td><span class="muted">${registered}</span></td>
+      <td class="actions-cell">${actionButtons}</td>
+    `;
+    return tr;
+  }));
+}
+
+async function loadUsers(){
+  try {
+    const { users } = await request('/api/v1/admin/users');
+    renderUsers(users);
+  } catch(err) {
+    userRows.innerHTML = `<tr><td colspan="6" class="error" style="text-align:center;">Failed to load users: ${err.message}</td></tr>`;
+  }
+}
+
+async function handleUserAction(event){
+  const btn = event.target.closest('button[data-action]');
+  if(!btn) return;
+  const userId = btn.getAttribute('data-id');
+  const action = btn.getAttribute('data-action');
+  btn.disabled = true;
+  try {
+    await request(`/api/v1/admin/users/${userId}/${action}`, { method: 'POST' });
+    await loadUsers();
+  } catch(err) {
+    alert(`Action failed: ${err.message}`);
+    btn.disabled = false;
+  }
+}
+
+userRows.addEventListener('click', handleUserAction);
+document.querySelector('#refresh-users').addEventListener('click', loadUsers);
+
+async function showDashboard(user){
+  loginPanel.hidden=true;
+  denied.hidden=true;
+  dashboard.hidden=false;
+  document.querySelector('#username').textContent=user.username;
+  try{
+    await request('/api/v1/admin/health');
+    document.querySelector('#api-status').textContent='HEALTHY';
+    await loadUsers();
+  }catch(exception){
+    if(exception.status===403){showDenied();return;}
+    document.querySelector('#api-status').textContent='OFFLINE';
+  }
+}
+
+async function signIn(event){
+  event.preventDefault();
+  error.textContent='';
+  try{
+    const {user}=await request('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});
+    form.reset();
+    if(user.role==='admin'){
+      await showDashboard(user);
+    } else {
+      showDenied();
+    }
+  }catch(exception){
+    error.textContent=exception.message;
+  }
+}
+
+async function signOut(){
+  await fetch('/api/v1/auth/logout',{method:'POST',credentials:'same-origin'});
+  showLogin();
+}
+
+form.addEventListener('submit',signIn);
+document.querySelector('#logout').addEventListener('click',signOut);
+document.querySelector('#denied-logout').addEventListener('click',signOut);
+
+request('/api/v1/auth/me')
+  .then(({user})=>user.role==='admin'?showDashboard(user):showDenied())
+  .catch(()=>showLogin());
 </script></body></html>

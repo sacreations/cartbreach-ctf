@@ -128,6 +128,9 @@ services:
     restart: on-failure:5
     environment:
       - DATABASE_URL=postgresql://cart_user:cart_db_pass_2026!@postgres-data:5432/cartbreach
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+      - GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI:-http://portal.cartbreach.local/api/v1/auth/google/callback}
     networks:
       - cartbreach-public
       - cartbreach-backend
