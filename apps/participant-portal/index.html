@@ -9,14 +9,80 @@
 <body>
   <main class="shell">
     <header class="topbar"><a class="brand" href="/">CART<span>BREACH</span></a><span class="pill">PARTICIPANT PORTAL</span></header>
-    <section class="hero"><p class="eyebrow">IE3132 // PENETRATION TESTING LAB</p><h1>Trace the breach.<br><em>Recover the truth.</em></h1><p class="lede">A six-stage supply-chain infiltration exercise. Investigate the exposed perimeter, follow the evidence, and submit a flag at every stage.</p><a class="button" href="#challenges">Enter challenge board <span>→</span></a></section>
-    <section id="challenges"><div class="section-heading"><div><p class="eyebrow">MISSION CONTROL</p><h2>Challenge board</h2></div><div class="score"><small>TEAM SCORE</small><strong>0 <span>PTS</span></strong></div></div><div id="challenge-list" class="challenge-grid"><p class="muted">Loading challenge telemetry…</p></div></section>
-    <footer><span>AUTHORIZED LAB ENVIRONMENT ONLY</span><a href="/connection.html">Connection guide</a></footer>
+    <section class="hero"><p class="eyebrow">IE3132 // PENETRATION TESTING LAB</p><h1>Trace the breach.<br><em>Recover the truth.</em></h1><p class="lede">A six-stage supply-chain infiltration exercise. Investigate the exposed perimeter, follow the evidence, and submit a flag at every stage.</p></section>
+    <section id="login-panel" class="auth-panel" hidden>
+      <p class="eyebrow">ACCESS REQUIRED</p><h2>Sign in to your lab</h2>
+      <form id="login-form"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Sign in <span>→</span></button><p id="login-error" class="error" role="alert"></p></form>
+    </section>
+    <section id="board" hidden>
+      <div class="section-heading"><div><p class="eyebrow">MISSION CONTROL</p><h2>Challenge board</h2><p class="muted">Signed in as <strong id="username"></strong> · <button id="logout" class="link-button" type="button">Log out</button></p></div><div class="score"><small>TEAM SCORE</small><strong>0 <span>PTS</span></strong></div></div>
+      <div id="challenge-list" class="challenge-grid"><p class="muted">Loading challenge telemetry…</p></div>
+    </section>
+    <footer><span>AUTHORIZED LAB ENVIRONMENT ONLY</span><span>Participant access</span></footer>
   </main>
   <script>
-    fetch('/api/v1/challenges').then(r => r.json()).then(({challenges}) => {
-      document.querySelector('#challenge-list').innerHTML = challenges.map(c => `<article class="challenge ${c.status}"><div class="stage">${String(c.id).padStart(2, '0')}</div><div><p class="status">${c.status}</p><h3>${c.title}</h3><p class="points">${c.points} points</p></div><span class="arrow">${c.status === 'available' ? '→' : '×'}</span></article>`).join('');
-    }).catch(() => { document.querySelector('#challenge-list').innerHTML = '<p class="error">Platform API unavailable. Check the environment status.</p>'; });
+    const loginPanel = document.querySelector('#login-panel');
+    const board = document.querySelector('#board');
+    const form = document.querySelector('#login-form');
+    const error = document.querySelector('#login-error');
+    const list = document.querySelector('#challenge-list');
+    const username = document.querySelector('#username');
+
+    async function request(url, options) {
+      const response = await fetch(url, { credentials: 'same-origin', ...options });
+      if (!response.ok) throw new Error(response.status === 401 ? 'Session expired. Sign in again.' : 'Platform API unavailable.');
+      return response.json();
+    }
+
+    function showLogin(message = '') {
+      loginPanel.hidden = false;
+      board.hidden = true;
+      error.textContent = message;
+    }
+
+    function renderChallenges(challenges) {
+      list.replaceChildren(...challenges.map((challenge) => {
+        const card = document.createElement('article');
+        card.className = `challenge ${challenge.status}`;
+        card.innerHTML = `<div class="stage"></div><div><p class="status"></p><h3></h3><p class="points"></p></div><span class="arrow"></span>`;
+        card.querySelector('.stage').textContent = String(challenge.id).padStart(2, '0');
+        card.querySelector('.status').textContent = challenge.status;
+        card.querySelector('h3').textContent = challenge.title;
+        card.querySelector('.points').textContent = `${challenge.points} points`;
+        card.querySelector('.arrow').textContent = challenge.status === 'available' ? '→' : '×';
+        return card;
+      }));
+    }
+
+    async function showBoard(user) {
+      loginPanel.hidden = true;
+      board.hidden = false;
+      username.textContent = user.username;
+      try {
+        const { challenges } = await request('/api/v1/challenges');
+        renderChallenges(challenges);
+      } catch (exception) {
+        showLogin(exception.message);
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      error.textContent = '';
+      const body = Object.fromEntries(new FormData(form));
+      try {
+        const { user } = await request('/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        form.reset();
+        await showBoard(user);
+      } catch (exception) { error.textContent = exception.message; }
+    });
+
+    document.querySelector('#logout').addEventListener('click', async () => {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' });
+      showLogin();
+    });
+
+    request('/api/v1/auth/me').then(({ user }) => showBoard(user)).catch(() => showLogin());
   </script>
 </body>
 </html>
