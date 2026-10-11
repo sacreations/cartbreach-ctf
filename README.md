@@ -181,15 +181,5 @@ bash scripts/reset.sh
 
 ---
 
-## 9. Presentation Scripts & Video Walkthrough Guide
-
-Comprehensive speaking cues, screen action tables, and anticipated viva defense questions for each member are available in the dedicated rehearsal directory:
-- `presentation-scripts/member1_platform_architecture.md`: Platform Architecture & Administration (00:00 - 05:00)
-- `presentation-scripts/member2_challenge_design_a.md`: Stages 1 to 3 Exploitation (05:00 - 10:00)
-- `presentation-scripts/member3_challenge_design_b.md`: Stages 4 to 6 Exploitation & Web Terminal (10:00 - 15:00)
-- `presentation-scripts/member4_integration_testing.md`: Master E2E Chain, Testing & Assignment 01 Evolution (15:00 - 20:00)
-
----
-
 ## 10. Educational Safety & Ethics Notice
 *CartBreach is developed strictly for educational cybersecurity instruction and authorized academic evaluation within the SLIIT IE3132 Penetration Testing module. All vulnerabilities and exploits are contained within sandboxed Docker network namespaces.*
