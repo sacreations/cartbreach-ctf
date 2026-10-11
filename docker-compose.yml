@@ -102,6 +102,8 @@ services:
     build: ./services/inventory-api
     container_name: cartbreach-inventory
     restart: on-failure:5
+    ports:
+      - "8000:8000"
     environment:
       - DB_HOST=postgres-data
       - DB_PORT=5432
@@ -110,6 +112,7 @@ services:
       - DB_PASS=cart_db_pass_2026!
       - INTERNAL_TOKEN=cb_internal_svc_t0k3n_4dm1n
     networks:
+      - cartbreach-public
       - cartbreach-backend
     deploy:
       resources:

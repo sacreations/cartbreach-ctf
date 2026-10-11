@@ -1,182 +1,373 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>CartBreach // Control</title><link rel="stylesheet" href="/styles.css"></head>
-<body><main class="shell">
-<header class="topbar"><a class="brand" href="/">CART<span>BREACH</span></a><span class="pill">CONTROL PLANE / ADMIN</span></header>
-<section class="hero"><p class="eyebrow">OPERATIONS // LIVE ENVIRONMENT</p><h1>Keep the<br><em>breach alive.</em></h1><p class="lede">Monitor the challenge stack, inspect participant activity, and restore the baseline environment when the lab needs a clean slate.</p></section>
-<section id="login-panel" class="auth-panel" hidden><p class="eyebrow">CONTROL PLANE ACCESS</p><h2>Sign in to continue</h2><form id="login-form"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Sign in <span>→</span></button><p id="login-error" class="error" role="alert"></p></form></section>
-<section id="dashboard" hidden>
-  <div class="section-heading">
-    <div>
-      <p class="eyebrow">SERVICE HEALTH</p>
-      <h2>Environment status</h2>
-      <p class="muted">Signed in as <strong id="username"></strong> · <button id="logout" class="link-button" type="button">Log out</button></p>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CartBreach // Cyber-Ops Control Plane</title>
+  <link rel="stylesheet" href="/styles.css?v=2">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">CART<span>BREACH</span></a>
+      <span class="pill">CONTROL PLANE // OPERATOR CONSOLE</span>
+    </header>
+
+    <div id="auth-section" class="auth-layout">
+      <section class="hero auth-hero">
+        <p class="eyebrow">MISSION CONTROL // OPERATIONS DESK</p>
+        <h1>Keep the<br><em>breach alive.</em></h1>
+        <p class="lede">Supervise live container services, review participant access requests, and inspect real-time flag submission telemetry across the CartBreach perimeter.</p>
+
+        <div class="mission-specs">
+          <div class="spec-item">
+            <span class="spec-num jade">01</span>
+            <div class="spec-content">
+              <strong>Service Health & Perimeter Mesh</strong>
+              <p>Continuous monitoring of platform-api, postgres relational ledger, and target challenge microservices.</p>
+            </div>
+          </div>
+          <div class="spec-item">
+            <span class="spec-num coral">02</span>
+            <div class="spec-content">
+              <strong>Identity Clearance & Vetting Queue</strong>
+              <p>Approve or deny participant clearance requests originating from Google OAuth and local operator accounts.</p>
+            </div>
+          </div>
+          <div class="spec-item">
+            <span class="spec-num violet">03</span>
+            <div class="spec-content">
+              <strong>Real-Time Progression Telemetry</strong>
+              <p>Live audit trail of verified flag captures, stage completions, and competitor leaderboard scores.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="auth-panel-column">
+        <!-- Admin Login -->
+        <section id="login-panel" class="auth-panel" hidden>
+          <div class="auth-card-header">
+            <span class="auth-dot"></span>
+            <span class="auth-eyebrow">CONTROL PLANE GATEWAY</span>
+          </div>
+          <h2>Sign in to continue</h2>
+          <p class="auth-subhead">Enter operator credentials with administrative role clearance.</p>
+          <form id="login-form">
+            <label>Admin Handle<input name="username" autocomplete="username" placeholder="e.g. admin" required></label>
+            <label>Passphrase<input name="password" type="password" autocomplete="current-password" placeholder="••••••••••••" required></label>
+            <button class="button" type="submit">Authenticate <span>→</span></button>
+            <p id="login-error" class="error" role="alert" style="margin-top:14px;font-family:'DM Mono';font-size:12px;"></p>
+          </form>
+          <div class="auth-card-footer">
+            <span>RESTRICTED ACCESS // LEVEL 4 AUDIT ACTIVE</span>
+          </div>
+        </section>
+
+        <!-- Access Denied -->
+        <section id="denied" class="auth-panel" hidden>
+          <div class="auth-card-header">
+            <span class="auth-dot rose"></span>
+            <span class="auth-eyebrow rose">CLEARANCE VIOLATION</span>
+          </div>
+          <h2>Administrative Privilege Required</h2>
+          <p class="muted" style="margin: 12px 0 24px; font-size: 14px; line-height: 1.5;">Your account possesses standard participant privileges but lacks authorization to inspect platform telemetry or administer user accounts.</p>
+          <button id="denied-logout" class="button" type="button">Sign out</button>
+        </section>
+      </div>
     </div>
-    <span class="live">● LIVE</span>
-  </div>
-  <div class="metrics">
-    <div><small>PLATFORM API</small><strong id="api-status">CHECKING</strong></div>
-    <div><small>PENDING APPROVALS</small><strong id="pending-count">0</strong></div>
-    <div><small>ACTIVE TEAMS</small><strong>—</strong></div>
-    <div><small>SUBMISSIONS</small><strong>—</strong></div>
-  </div>
-  <div class="service-list">
-    <div><span class="dot up"></span><b>platform-api</b><span>healthy</span><code>:8100</code></div>
-    <div><span class="dot up"></span><b>postgres-data</b><span>healthy</span><code>:5432 / internal</code></div>
-    <div><span class="dot pending"></span><b>challenge services</b><span>awaiting telemetry</span><code>6 stages</code></div>
-  </div>
-  <div class="users-table-card">
-    <div class="table-title-bar">
-      <h3>User Management & Approval Queue</h3>
-      <button id="refresh-users" class="link-button" type="button">Refresh list ↻</button>
-    </div>
-    <table class="users-table">
-      <thead>
-        <tr>
-          <th>User</th>
-          <th>Provider</th>
-          <th>Role</th>
-          <th>Status</th>
-          <th>Registered</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody id="user-rows">
-        <tr><td colspan="6" class="muted" style="text-align:center;">Loading user accounts…</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-<section id="denied" class="auth-panel" hidden><p class="eyebrow">ACCESS DENIED</p><h2>Admin role required</h2><p class="muted">This account can use the participant portal but cannot inspect operations telemetry.</p><button id="denied-logout" class="button" type="button">Log out</button></section>
-<footer><span>ADMIN ACCESS // AUDIT LOGGED</span><span>Environment reset is operator-managed</span></footer>
-</main><script>
-const loginPanel=document.querySelector('#login-panel'), dashboard=document.querySelector('#dashboard'), denied=document.querySelector('#denied'), form=document.querySelector('#login-form'), error=document.querySelector('#login-error');
-const userRows = document.querySelector('#user-rows');
-const pendingCount = document.querySelector('#pending-count');
 
-async function request(url, options){
-  const response=await fetch(url,{credentials:'same-origin',...options});
-  if(!response.ok){
-    const data = await response.json().catch(() => ({}));
-    const message = data.detail || (response.status===401?'Session expired. Sign in again.':response.status===403?'Admin role required.':'Platform API unavailable.');
-    const exception=new Error(message);
-    exception.status=response.status;
-    throw exception;
-  }
-  return response.json();
-}
+    <!-- Operational Dashboard -->
+    <section id="dashboard" hidden>
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow" style="margin:0 0 8px;">TELEMETRY STREAM // HEALTH MATRIX</p>
+          <h2>Environment Operations</h2>
+          <p class="muted" style="margin:6px 0 0;font-size:14px;">
+            Operator: <strong id="username" style="color:var(--text)"></strong> · <button id="logout" class="link-button" type="button">Sign out</button>
+          </p>
+        </div>
+        <span class="live">SYS.ACTIVE</span>
+      </div>
 
-function showLogin(message=''){loginPanel.hidden=false;dashboard.hidden=true;denied.hidden=true;error.textContent=message;}
-function showDenied(){loginPanel.hidden=true;dashboard.hidden=true;denied.hidden=false;}
+      <!-- Real-Time Metrics HUD -->
+      <div class="metrics">
+        <div class="metric-card jade">
+          <small>Platform API</small>
+          <strong id="api-status" class="jade-text">CHECKING</strong>
+        </div>
+        <div class="metric-card highlight">
+          <small>Pending Clearances</small>
+          <strong id="pending-count" class="coral-text">0</strong>
+        </div>
+        <div class="metric-card violet">
+          <small>Registered Accounts</small>
+          <strong id="total-users">0</strong>
+        </div>
+        <div class="metric-card highlight">
+          <small>Verified Solves</small>
+          <strong id="total-solves" class="coral-text">0</strong>
+        </div>
+      </div>
 
-function renderUsers(users){
-  const pending = users.filter(u => u.status === 'pending').length;
-  pendingCount.textContent = pending;
+      <!-- Service Matrix -->
+      <div class="service-list-card">
+        <div class="service-row">
+          <span class="dot up"></span>
+          <b>platform-api</b>
+          <span class="svc-status">Core Orchestration & Auth Engine</span>
+          <code>:8100 (Internal)</code>
+        </div>
+        <div class="service-row">
+          <span class="dot up"></span>
+          <b>postgres-data</b>
+          <span class="svc-status">Relational Ledger & User Store</span>
+          <code>:5432 (Internal)</code>
+        </div>
+        <div class="service-row">
+          <span class="dot up"></span>
+          <b>cartbreach-challenges</b>
+          <span class="svc-status">Target Microservices & Git Mirror</span>
+          <code>6 Active Stages</code>
+        </div>
+      </div>
 
-  if(!users.length){
-    userRows.innerHTML = '<tr><td colspan="6" class="muted" style="text-align:center;">No users registered.</td></tr>';
-    return;
-  }
+      <!-- User Management Queue -->
+      <div class="users-table-card">
+        <div class="table-title-bar">
+          <div>
+            <h3>Participant Clearance & Access Control</h3>
+            <span class="muted" style="font-family:'DM Mono';font-size:11px;">Identity vetting queue for Google OAuth and local registrants</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:16px;">
+            <div class="table-filter-tabs">
+              <button class="filter-tab active" data-filter="all">ALL</button>
+              <button class="filter-tab" data-filter="pending">PENDING</button>
+              <button class="filter-tab" data-filter="approved">APPROVED</button>
+              <button class="filter-tab" data-filter="rejected">REJECTED</button>
+            </div>
+            <button id="refresh-users" class="link-button" type="button">Refresh ↻</button>
+          </div>
+        </div>
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Operator Handle</th>
+              <th>Provider</th>
+              <th>Role</th>
+              <th>Clearance</th>
+              <th>Registered</th>
+              <th style="text-align:right;">Access Decisions</th>
+            </tr>
+          </thead>
+          <tbody id="user-rows">
+            <tr><td colspan="6" class="muted" style="text-align:center;font-family:'DM Mono';">Polling clearance registry…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
 
-  userRows.replaceChildren(...users.map(u => {
-    const tr = document.createElement('tr');
-    const registered = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
-    const email = u.email ? `<small class="muted" style="display:block;">${u.email}</small>` : '';
+    <footer>
+      <span>ADMINISTRATIVE TELEMETRY // AUDIT COMPLIANT</span>
+      <span>Operations Node v0.2.0</span>
+    </footer>
+  </main>
 
-    let actionButtons = '';
-    if(u.status === 'pending'){
-      actionButtons = `
-        <button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Approve</button>
-        <button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Reject</button>
-      `;
-    } else if(u.status === 'rejected'){
-      actionButtons = `<button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Re-approve</button>`;
-    } else if(u.role !== 'admin'){
-      actionButtons = `<button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Revoke</button>`;
-    } else {
-      actionButtons = `<span class="muted">—</span>`;
+  <script>
+    const authSection = document.querySelector('#auth-section');
+    const loginPanel = document.querySelector('#login-panel');
+    const dashboard = document.querySelector('#dashboard');
+    const denied = document.querySelector('#denied');
+    const form = document.querySelector('#login-form');
+    const error = document.querySelector('#login-error');
+    const userRows = document.querySelector('#user-rows');
+    const pendingCount = document.querySelector('#pending-count');
+    const totalUsersEl = document.querySelector('#total-users');
+    const totalSolvesEl = document.querySelector('#total-solves');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+
+    let allUsersCache = [];
+    let activeFilter = 'all';
+
+    async function request(url, options = {}) {
+      const response = await fetch(url, { credentials: 'same-origin', ...options });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const message = data.detail || (response.status === 401 ? 'Session expired. Sign in again.' : response.status === 403 ? 'Admin privileges required.' : 'Platform API communication failure.');
+        const err = new Error(message);
+        err.status = response.status;
+        throw err;
+      }
+      return response.json();
     }
 
-    tr.innerHTML = `
-      <td><b>${u.username}</b>${email}</td>
-      <td><code>${u.auth_provider || 'local'}</code></td>
-      <td><span>${u.role}</span></td>
-      <td><span class="badge-status ${u.status || 'approved'}">${u.status || 'approved'}</span></td>
-      <td><span class="muted">${registered}</span></td>
-      <td class="actions-cell">${actionButtons}</td>
-    `;
-    return tr;
-  }));
-}
-
-async function loadUsers(){
-  try {
-    const { users } = await request('/api/v1/admin/users');
-    renderUsers(users);
-  } catch(err) {
-    userRows.innerHTML = `<tr><td colspan="6" class="error" style="text-align:center;">Failed to load users: ${err.message}</td></tr>`;
-  }
-}
-
-async function handleUserAction(event){
-  const btn = event.target.closest('button[data-action]');
-  if(!btn) return;
-  const userId = btn.getAttribute('data-id');
-  const action = btn.getAttribute('data-action');
-  btn.disabled = true;
-  try {
-    await request(`/api/v1/admin/users/${userId}/${action}`, { method: 'POST' });
-    await loadUsers();
-  } catch(err) {
-    alert(`Action failed: ${err.message}`);
-    btn.disabled = false;
-  }
-}
-
-userRows.addEventListener('click', handleUserAction);
-document.querySelector('#refresh-users').addEventListener('click', loadUsers);
-
-async function showDashboard(user){
-  loginPanel.hidden=true;
-  denied.hidden=true;
-  dashboard.hidden=false;
-  document.querySelector('#username').textContent=user.username;
-  try{
-    await request('/api/v1/admin/health');
-    document.querySelector('#api-status').textContent='HEALTHY';
-    await loadUsers();
-  }catch(exception){
-    if(exception.status===403){showDenied();return;}
-    document.querySelector('#api-status').textContent='OFFLINE';
-  }
-}
-
-async function signIn(event){
-  event.preventDefault();
-  error.textContent='';
-  try{
-    const {user}=await request('/api/v1/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(new FormData(form)))});
-    form.reset();
-    if(user.role==='admin'){
-      await showDashboard(user);
-    } else {
-      showDenied();
+    function showLogin(message = '') {
+      if (authSection) authSection.hidden = false;
+      loginPanel.hidden = false;
+      dashboard.hidden = true;
+      denied.hidden = true;
+      error.textContent = message;
     }
-  }catch(exception){
-    error.textContent=exception.message;
-  }
-}
 
-async function signOut(){
-  await fetch('/api/v1/auth/logout',{method:'POST',credentials:'same-origin'});
-  showLogin();
-}
+    function showDenied() {
+      if (authSection) authSection.hidden = false;
+      loginPanel.hidden = true;
+      dashboard.hidden = true;
+      denied.hidden = false;
+    }
 
-form.addEventListener('submit',signIn);
-document.querySelector('#logout').addEventListener('click',signOut);
-document.querySelector('#denied-logout').addEventListener('click',signOut);
+    function renderFilteredUsers() {
+      let filtered = allUsersCache;
+      if (activeFilter !== 'all') {
+        filtered = allUsersCache.filter(u => (u.status || 'approved') === activeFilter);
+      }
 
-request('/api/v1/auth/me')
-  .then(({user})=>user.role==='admin'?showDashboard(user):showDenied())
-  .catch(()=>showLogin());
-</script></body></html>
+      if (!filtered.length) {
+        userRows.innerHTML = `<tr><td colspan="6" class="muted" style="text-align:center;font-family:'DM Mono';">No accounts matching "${activeFilter.toUpperCase()}".</td></tr>`;
+        return;
+      }
+
+      userRows.replaceChildren(...filtered.map((u) => {
+        const tr = document.createElement('tr');
+        const registered = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
+        const email = u.email ? `<small class="muted" style="display:block;font-size:12px;">${u.email}</small>` : '';
+
+        let actionButtons = '';
+        if (u.status === 'pending') {
+          actionButtons = `
+            <button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Grant Clearance</button>
+            <button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Deny</button>
+          `;
+        } else if (u.status === 'rejected') {
+          actionButtons = `<button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Re-clear</button>`;
+        } else if (u.role !== 'admin') {
+          actionButtons = `<button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Revoke</button>`;
+        } else {
+          actionButtons = `<span class="muted" style="font-family:'DM Mono';font-size:11px;">PROTECTED</span>`;
+        }
+
+        tr.innerHTML = `
+          <td><strong>${u.username}</strong>${email}</td>
+          <td><code style="color:var(--text);">${u.auth_provider || 'local'}</code></td>
+          <td><span style="font-family:'DM Mono';font-size:12px;color:var(--muted);">${u.role}</span></td>
+          <td><span class="badge-status ${u.status || 'approved'}">${u.status || 'approved'}</span></td>
+          <td><span class="muted" style="font-family:'DM Mono';font-size:12px;">${registered}</span></td>
+          <td class="actions-cell" style="justify-content:flex-end;">${actionButtons}</td>
+        `;
+        return tr;
+      }));
+    }
+
+    function renderUsers(users) {
+      allUsersCache = users;
+      const pending = users.filter(u => u.status === 'pending').length;
+      pendingCount.textContent = pending;
+      totalUsersEl.textContent = users.length;
+      renderFilteredUsers();
+    }
+
+    async function loadStats() {
+      try {
+        const stats = await request('/api/v1/admin/stats');
+        totalSolvesEl.textContent = stats.total_solves || 0;
+      } catch {
+        // Fallback gracefully
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const { users } = await request('/api/v1/admin/users');
+        renderUsers(users);
+        await loadStats();
+      } catch (err) {
+        userRows.innerHTML = `<tr><td colspan="6" class="error" style="text-align:center;">Failed to load users: ${err.message}</td></tr>`;
+      }
+    }
+
+    async function handleUserAction(event) {
+      const btn = event.target.closest('button[data-action]');
+      if (!btn) return;
+      const userId = btn.getAttribute('data-id');
+      const action = btn.getAttribute('data-action');
+      btn.disabled = true;
+      try {
+        await request(`/api/v1/admin/users/${userId}/${action}`, { method: 'POST' });
+        await loadUsers();
+      } catch (err) {
+        alert(`Action failed: ${err.message}`);
+        btn.disabled = false;
+      }
+    }
+
+    userRows.addEventListener('click', handleUserAction);
+    document.querySelector('#refresh-users').addEventListener('click', loadUsers);
+
+    filterTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        filterTabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activeFilter = tab.getAttribute('data-filter');
+        renderFilteredUsers();
+      });
+    });
+
+    async function showDashboard(user) {
+      if (authSection) authSection.hidden = true;
+      loginPanel.hidden = true;
+      denied.hidden = true;
+      dashboard.hidden = false;
+      document.querySelector('#username').textContent = user.username;
+      try {
+        await request('/api/v1/admin/health');
+        document.querySelector('#api-status').textContent = 'ONLINE';
+        await loadUsers();
+      } catch (err) {
+        if (err.status === 403) {
+          showDenied();
+          return;
+        }
+        document.querySelector('#api-status').textContent = 'OFFLINE';
+        document.querySelector('#api-status').className = 'coral-text';
+      }
+    }
+
+    async function signIn(event) {
+      event.preventDefault();
+      error.textContent = '';
+      try {
+        const { user } = await request('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        form.reset();
+        if (user.role === 'admin') {
+          await showDashboard(user);
+        } else {
+          showDenied();
+        }
+      } catch (err) {
+        error.textContent = err.message;
+      }
+    }
+
+    async function signOut() {
+      await fetch('/api/v1/auth/logout', { method: 'POST', credentials: 'same-origin' });
+      showLogin();
+    }
+
+    form.addEventListener('submit', signIn);
+    document.querySelector('#logout').addEventListener('click', signOut);
+    document.querySelector('#denied-logout').addEventListener('click', signOut);
+
+    // Initial check
+    request('/api/v1/auth/me')
+      .then(({ user }) => {
+        if (user.role === 'admin') showDashboard(user);
+        else showDenied();
+      })
+      .catch(() => showLogin());
+  </script>
+</body>
+</html>

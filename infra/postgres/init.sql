@@ -22,6 +22,15 @@ CREATE TABLE IF NOT EXISTS orders (
     shipping_notes TEXT
 );
 
+CREATE TABLE IF NOT EXISTS challenge_solves (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    stage_id INTEGER NOT NULL,
+    flag_submitted VARCHAR(256) NOT NULL,
+    solved_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(user_id, stage_id)
+);
+
 CREATE TABLE IF NOT EXISTS system_service_keys (
     id SERIAL PRIMARY KEY,
     key_name VARCHAR(64) NOT NULL,

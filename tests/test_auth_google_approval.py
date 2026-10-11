@@ -1,7 +1,13 @@
 import sys
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
+
+for mod_name in ("bcrypt", "psycopg", "psycopg.rows"):
+    try:
+        __import__(mod_name)
+    except ImportError:
+        sys.modules[mod_name] = MagicMock()
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "services" / "platform-api"))
 

@@ -3,59 +3,375 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CartBreach // Participant Portal</title>
-  <link rel="stylesheet" href="/styles.css">
+  <title>CartBreach // Cyber-Ops Participant Portal</title>
+  <link rel="stylesheet" href="/styles.css?v=2">
 </head>
 <body>
   <main class="shell">
-    <header class="topbar"><a class="brand" href="/">CART<span>BREACH</span></a><span class="pill">PARTICIPANT PORTAL</span></header>
-    <section class="hero"><p class="eyebrow">IE3132 // PENETRATION TESTING LAB</p><h1>Trace the breach.<br><em>Recover the truth.</em></h1><p class="lede">A six-stage supply-chain infiltration exercise. Investigate the exposed perimeter, follow the evidence, and submit a flag at every stage.</p></section>
-    <section id="login-panel" class="auth-panel" hidden>
-      <p class="eyebrow">ACCESS REQUIRED</p><h2>Sign in to your lab</h2>
-      <a class="google-button" href="/api/v1/auth/google/login">
-        <svg class="google-icon" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        Sign in with Google
-      </a>
-      <div class="divider">OR USE LOCAL ACCOUNT</div>
-      <form id="login-form"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button class="button" type="submit">Sign in <span>→</span></button><p id="login-error" class="error" role="alert"></p></form>
-    </section>
-    <section id="pending-panel" class="auth-panel" hidden>
-      <span class="badge-pending">PENDING APPROVAL</span>
-      <h2>Account under review</h2>
-      <p class="muted">Signed in as <strong id="pending-username"></strong> (<span id="pending-email"></span>).</p>
-      <p class="lede" style="font-size:14px;margin:16px 0 24px;">Your Google account is registered, but requires administrative authorization before challenge telemetry and flag submission endpoints are unlocked.</p>
-      <div style="display:flex;gap:12px;">
-        <button id="pending-refresh" class="button" type="button">Check status <span>↻</span></button>
-        <button id="pending-logout" class="button secondary" type="button">Log out</button>
+    <header class="topbar">
+      <a class="brand" href="/">CART<span>BREACH</span></a>
+      <div class="topbar-right">
+        <span class="pill">SYS.ONLINE // PARTICIPANT NODE</span>
+      </div>
+    </header>
+
+    <div id="auth-section" class="auth-layout">
+      <section class="hero auth-hero">
+        <p class="eyebrow">IE3132 // ADVANCED OFFENSIVE SECURITY LAB</p>
+        <h1>Trace the breach.<br><em>Recover the truth.</em></h1>
+        <p class="lede">A six-stage sequential supply-chain infiltration campaign. Investigate target telemetry, exploit systemic vulnerabilities, and submit cryptographic flags to unlock progressive clearance.</p>
+
+        <div class="mission-specs">
+          <div class="spec-item border-coral">
+            <span class="spec-num coral">01</span>
+            <div class="spec-content">
+              <strong>Sequential Exploitation Chain</strong>
+              <p>6 gated milestones from public API reconnaissance to root-level host takeover.</p>
+            </div>
+          </div>
+          <div class="spec-item border-jade">
+            <span class="spec-num jade">02</span>
+            <div class="spec-content">
+              <strong>Interactive Web Terminal</strong>
+              <p>Live container TTY console directly connected to target environments.</p>
+            </div>
+          </div>
+          <div class="spec-item border-violet">
+            <span class="spec-num violet">03</span>
+            <div class="spec-content">
+              <strong>Automated Ledger Verification</strong>
+              <p>Instant cryptographic flag validation and real-time team scoreboard standings.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="auth-panel-column">
+        <!-- Login Panel -->
+        <section id="login-panel" class="auth-panel" hidden>
+          <div class="auth-card-header">
+            <span class="auth-dot"></span>
+            <span class="auth-eyebrow">ACCESS GATEWAY // SECURE PROTOCOL</span>
+          </div>
+          <h2>Sign in to mission console</h2>
+          <p class="auth-subhead">Verify identity to access offensive telemetry and stage submissions.</p>
+
+          <a class="google-button" href="/api/v1/auth/google/login">
+            <svg class="google-icon" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            Sign in with Google
+          </a>
+          <div class="divider"><span>OR OPERATOR CREDENTIALS</span></div>
+          <form id="login-form">
+            <label>Operator Username<input name="username" autocomplete="username" placeholder="e.g. operator1" required></label>
+            <label>Passphrase<input name="password" type="password" autocomplete="current-password" placeholder="••••••••••••" required></label>
+            <button class="button" type="submit">Authenticate <span>→</span></button>
+            <p id="login-error" class="error" role="alert" style="margin-top:14px;font-family:'DM Mono',monospace;font-size:12px;"></p>
+          </form>
+          <div class="auth-card-footer">
+            <span>AUDITED ACCESS // SECURITY LAB ENVIRONMENT</span>
+          </div>
+        </section>
+
+        <!-- Pending Approval Panel -->
+        <section id="pending-panel" class="auth-panel" hidden>
+          <div class="auth-card-header">
+            <span class="auth-dot amber"></span>
+            <span class="auth-eyebrow amber">IDENTITY VETTING QUEUE</span>
+          </div>
+          <span class="badge-pending">CLEARANCE PENDING APPROVAL</span>
+          <h2>Clearance Verification</h2>
+          <p class="muted" style="margin-top:8px;">Operator handle: <strong id="pending-username" style="color:var(--text)"></strong> (<span id="pending-email"></span>).</p>
+          <p class="lede" style="font-size:14px;margin:16px 0 24px;">Your identity has been registered in the platform database. Lab operators must grant administrative clearance before offensive telemetry and flag submission endpoints are unlocked.</p>
+          <div style="display:flex;gap:12px;">
+            <button id="pending-refresh" class="button" type="button">Check status <span>↻</span></button>
+            <button id="pending-logout" class="button secondary" type="button">Sign out</button>
+          </div>
+        </section>
+      </div>
+    </div>
+
+    <!-- Mission Board -->
+    <section id="board" hidden>
+      <!-- Telemetry HUD -->
+      <div class="hud-bar">
+        <div class="hud-stat">
+          <small>Team Score</small>
+          <strong><span id="hud-score" class="stat-highlight">0</span> <span>PTS</span></strong>
+        </div>
+        <div class="hud-stat">
+          <small>Stages Cleared</small>
+          <strong><span id="hud-solves" class="stat-jade">0</span> <span>/ 6</span></strong>
+        </div>
+        <div class="hud-stat">
+          <small>Current Clearance</small>
+          <strong id="hud-clearance" style="font-size:18px;">STAGE 01</strong>
+        </div>
+        <div class="hud-stat">
+          <small>Campaign Progress</small>
+          <strong id="hud-percent">0%</strong>
+          <div class="progress-track">
+            <div id="hud-progress-fill" class="progress-fill" style="width: 0%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow" style="margin:0 0 8px;">OPERATION CARTBREACH // TELEMETRY</p>
+          <h2>Mission Objectives</h2>
+        </div>
+        <div class="user-meta">
+          <span>Signed in as <strong id="username"></strong></span>
+          <span>·</span>
+          <button id="logout" class="link-button" type="button">Sign out</button>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="view-tabs">
+        <button id="tab-challenges" class="tab-btn active" type="button">◈ CHALLENGE GRID</button>
+        <button id="tab-leaderboard" class="tab-btn" type="button">▲ TEAM LEADERBOARD</button>
+        <button id="tab-terminal" class="tab-btn" type="button">>_ WEB TERMINAL</button>
+      </div>
+
+      <!-- Challenge Grid View -->
+      <div id="challenge-view">
+        <div id="challenge-list" class="challenge-grid">
+          <p class="muted" style="font-family:'DM Mono';">Establishing telemetry feed with platform API…</p>
+        </div>
+      </div>
+
+      <!-- Leaderboard View -->
+      <div id="leaderboard-view" hidden>
+        <div class="leaderboard-card">
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th style="width:70px;">Rank</th>
+                <th>Team / Operator</th>
+                <th>Solves</th>
+                <th>Total Score</th>
+                <th>Last Capture</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-rows">
+              <tr><td colspan="5" class="muted" style="text-align:center;font-family:'DM Mono';">Loading leaderboard telemetry…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Full Web Terminal View -->
+      <div id="terminal-view" hidden>
+        <div class="terminal-workbench">
+          <div class="terminal-bar">
+            <div class="terminal-bar-left">
+              <span class="terminal-status-dot"></span>
+              <span class="terminal-user-badge">inventory-svc@cartbreach-inventory</span>
+              <span class="muted" style="font-family:'DM Mono';font-size:11px;margin-left:6px;">[LIVE PTY // UID: 1001]</span>
+            </div>
+            <div class="terminal-bar-actions">
+              <a href="/terminal/" target="_blank" rel="noopener noreferrer" class="terminal-btn-link">OPEN POP-OUT ↗</a>
+            </div>
+          </div>
+          <iframe id="main-terminal-frame" class="terminal-frame-workbench" title="CartBreach Interactive Terminal"></iframe>
+          <div class="terminal-shortcuts">
+            <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">EXPLOIT MACROS (CLICK TO COPY):</span>
+            <button type="button" class="macro-btn" data-cmd="ls -la /opt/scripts/">ls /opt/scripts/</button>
+            <button type="button" class="macro-btn" data-cmd="cat /var/log/sync_orders.log">cat sync_orders.log</button>
+            <button type="button" class="macro-btn" data-cmd="cat /home/inventory-svc/user.txt">cat user.txt</button>
+            <button type="button" class="macro-btn" data-cmd="echo 'cp /root/root.txt /tmp/root_flag.txt && chmod 777 /tmp/root_flag.txt' >> /opt/scripts/sync_orders.sh">append privesc</button>
+            <button type="button" class="macro-btn" data-cmd="cat /tmp/root_flag.txt">cat /tmp/root_flag.txt</button>
+          </div>
+        </div>
       </div>
     </section>
-    <section id="board" hidden>
-      <div class="section-heading"><div><p class="eyebrow">MISSION CONTROL</p><h2>Challenge board</h2><p class="muted">Signed in as <strong id="username"></strong> · <button id="logout" class="link-button" type="button">Log out</button></p></div><div class="score"><small>TEAM SCORE</small><strong>0 <span>PTS</span></strong></div></div>
-      <div id="challenge-list" class="challenge-grid"><p class="muted">Loading challenge telemetry…</p></div>
-    </section>
-    <footer><span>AUTHORIZED LAB ENVIRONMENT ONLY</span><span>Participant access</span></footer>
+
+    <!-- Challenge Intelligence & Submission Modal -->
+    <div id="challenge-modal" class="modal-overlay" hidden>
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-header-left">
+            <div class="modal-tags">
+              <span id="modal-stage-pill" class="pill">STAGE 01</span>
+              <span id="modal-category-tag" class="category-tag">OSINT</span>
+              <span id="modal-points-pill" class="pill violet">100 PTS</span>
+              <span id="modal-status-badge" class="badge">AVAILABLE</span>
+            </div>
+            <h2 id="modal-title" class="modal-title">Challenge Title</h2>
+          </div>
+          <button id="modal-close-btn" class="modal-close-btn" type="button" aria-label="Close modal">✕</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- 1. Scenario Intel Briefing -->
+          <div class="intel-section">
+            <div class="section-label">◈ THREAT INTEL & SCENARIO BRIEFING</div>
+            <div id="modal-briefing" class="briefing-box">Loading intel briefing…</div>
+          </div>
+
+          <!-- 2. Target Telemetry & Commands -->
+          <div class="intel-section">
+            <div class="section-label violet">◈ TARGET TELEMETRY & CONNECTION INFO</div>
+            <div class="target-box">
+              <div class="target-type">Target Architecture: <strong id="modal-target-type">Web Service</strong></div>
+              <div id="modal-endpoints-container">
+                <div style="font-family:'DM Mono';font-size:11px;color:var(--dim);margin-bottom:6px;">NETWORK ENDPOINTS:</div>
+                <div id="modal-endpoints-list"></div>
+              </div>
+              <div id="modal-commands-container" style="margin-top:14px;">
+                <div style="font-family:'DM Mono';font-size:11px;color:var(--dim);margin-bottom:6px;">TACTICAL COMMANDS:</div>
+                <div id="modal-commands-list"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Web Terminal (Stages 5 & 6) -->
+          <div id="modal-terminal-section" class="intel-section" hidden>
+            <div class="section-label coral">◈ IN-BROWSER WEB TERMINAL // CONTAINER SESSION</div>
+            <div class="terminal-container">
+              <div class="terminal-bar">
+                <div class="terminal-bar-left">
+                  <span class="terminal-status-dot"></span>
+                  <span class="terminal-user-badge">inventory-svc@cartbreach-inventory</span>
+                </div>
+                <div class="terminal-bar-actions">
+                  <button id="btn-toggle-modal-terminal" class="terminal-btn" type="button">EXPAND TERMINAL ▾</button>
+                  <a href="/terminal/" target="_blank" rel="noopener noreferrer" class="terminal-btn-link">OPEN POP-OUT ↗</a>
+                </div>
+              </div>
+              <div id="modal-terminal-wrapper" class="terminal-wrapper" hidden>
+                <iframe id="modal-terminal-frame" class="terminal-frame" title="Interactive Container Terminal"></iframe>
+                <div class="terminal-shortcuts">
+                  <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">EXPLOIT MACROS (CLICK TO COPY):</span>
+                  <button type="button" class="macro-btn" data-cmd="ls -la /opt/scripts/">ls /opt/scripts/</button>
+                  <button type="button" class="macro-btn" data-cmd="cat /var/log/sync_orders.log">cat sync_orders.log</button>
+                  <button type="button" class="macro-btn" data-cmd="cat /home/inventory-svc/user.txt">cat user.txt</button>
+                  <button type="button" class="macro-btn" data-cmd="echo 'cp /root/root.txt /tmp/root_flag.txt && chmod 777 /tmp/root_flag.txt' >> /opt/scripts/sync_orders.sh">append privesc</button>
+                  <button type="button" class="macro-btn" data-cmd="cat /tmp/root_flag.txt">cat /tmp/root_flag.txt</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Exploitation Instructions Checklist -->
+          <div class="intel-section">
+            <div class="section-label">◈ EXPLOITATION PROTOCOL</div>
+            <ol id="modal-instructions" class="instruction-list"></ol>
+          </div>
+
+          <!-- 4. Progressive Hints Accordions -->
+          <div class="intel-section">
+            <div class="section-label amber">◈ PROGRESSIVE INTEL HINTS</div>
+            <div id="modal-hints" class="hints-container"></div>
+          </div>
+
+          <!-- 5. Flag Submission Engine -->
+          <div class="intel-section">
+            <div class="section-label">◈ FLAG TRANSMISSION & VALIDATION</div>
+            <!-- Solved Victory Banner -->
+            <div id="modal-solved-banner" class="submission-card solved-banner" hidden>
+              <div style="font-size:28px;color:var(--jade)">✓</div>
+              <div>
+                <strong style="display:block;color:var(--jade);font-size:16px;">CRYPTOGRAPHIC FLAG ACCEPTED</strong>
+                <span class="muted" style="font-size:13px;">Stage solved and verified on platform ledger. Points awarded to team total.</span>
+              </div>
+            </div>
+
+            <!-- Active Submission Form -->
+            <div id="modal-submission-form" class="submission-card">
+              <div style="font-size:13px;color:var(--muted);margin-bottom:8px;">
+                Enter the recovered flag matching format <code>SLIIT{...}</code>
+              </div>
+              <form id="flag-form" class="flag-input-form">
+                <div class="flag-input-wrapper">
+                  <input id="flag-input" class="flag-input" placeholder="SLIIT{c4rt_br34ch_...}" autocomplete="off" required spellcheck="false">
+                </div>
+                <button id="submit-flag-btn" class="btn-submit-flag" type="submit">TRANSMIT FLAG →</button>
+              </form>
+              <div id="flag-feedback" class="submission-msg"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <span>RESTRICTED ACCESS // AUTHORIZED LAB ENVIRONMENT</span>
+      <span>Participant Node v0.2.0</span>
+    </footer>
   </main>
+
   <script>
+    // Elements
+    const authSection = document.querySelector('#auth-section');
     const loginPanel = document.querySelector('#login-panel');
     const pendingPanel = document.querySelector('#pending-panel');
     const board = document.querySelector('#board');
-    const form = document.querySelector('#login-form');
-    const error = document.querySelector('#login-error');
-    const list = document.querySelector('#challenge-list');
-    const username = document.querySelector('#username');
+    const loginForm = document.querySelector('#login-form');
+    const loginError = document.querySelector('#login-error');
+    const challengeList = document.querySelector('#challenge-list');
+    const usernameEl = document.querySelector('#username');
     const pendingUsername = document.querySelector('#pending-username');
     const pendingEmail = document.querySelector('#pending-email');
 
-    async function request(url, options) {
+    // HUD Elements
+    const hudScore = document.querySelector('#hud-score');
+    const hudSolves = document.querySelector('#hud-solves');
+    const hudClearance = document.querySelector('#hud-clearance');
+    const hudPercent = document.querySelector('#hud-percent');
+    const hudProgressFill = document.querySelector('#hud-progress-fill');
+
+    // Tabs
+    const tabChallenges = document.querySelector('#tab-challenges');
+    const tabLeaderboard = document.querySelector('#tab-leaderboard');
+    const tabTerminal = document.querySelector('#tab-terminal');
+    const challengeView = document.querySelector('#challenge-view');
+    const leaderboardView = document.querySelector('#leaderboard-view');
+    const terminalView = document.querySelector('#terminal-view');
+    const leaderboardRows = document.querySelector('#leaderboard-rows');
+    const mainTerminalFrame = document.querySelector('#main-terminal-frame');
+
+    // Modal Elements
+    const modal = document.querySelector('#challenge-modal');
+    const modalCloseBtn = document.querySelector('#modal-close-btn');
+    const modalStagePill = document.querySelector('#modal-stage-pill');
+    const modalCategoryTag = document.querySelector('#modal-category-tag');
+    const modalPointsPill = document.querySelector('#modal-points-pill');
+    const modalStatusBadge = document.querySelector('#modal-status-badge');
+    const modalTitle = document.querySelector('#modal-title');
+    const modalBriefing = document.querySelector('#modal-briefing');
+    const modalTargetType = document.querySelector('#modal-target-type');
+    const modalEndpointsList = document.querySelector('#modal-endpoints-list');
+    const modalCommandsList = document.querySelector('#modal-commands-list');
+    const modalInstructions = document.querySelector('#modal-instructions');
+    const modalHints = document.querySelector('#modal-hints');
+    const modalSolvedBanner = document.querySelector('#modal-solved-banner');
+    const modalSubmissionForm = document.querySelector('#modal-submission-form');
+    const flagForm = document.querySelector('#flag-form');
+    const flagInput = document.querySelector('#flag-input');
+    const submitFlagBtn = document.querySelector('#submit-flag-btn');
+    const flagFeedback = document.querySelector('#flag-feedback');
+
+    // Modal Terminal Elements
+    const modalTerminalSection = document.querySelector('#modal-terminal-section');
+    const btnToggleModalTerminal = document.querySelector('#btn-toggle-modal-terminal');
+    const modalTerminalWrapper = document.querySelector('#modal-terminal-wrapper');
+    const modalTerminalFrame = document.querySelector('#modal-terminal-frame');
+
+    let currentOpenStageId = null;
+    let cachedChallenges = [];
+
+    async function request(url, options = {}) {
       const response = await fetch(url, { credentials: 'same-origin', ...options });
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        const message = data.detail || (response.status === 401 ? 'Session expired. Sign in again.' : 'Platform API unavailable.');
+        const message = data.detail || (response.status === 401 ? 'Session expired. Sign in again.' : 'Platform API communication failure.');
         const err = new Error(message);
         err.status = response.status;
         throw err;
@@ -64,13 +380,15 @@
     }
 
     function showLogin(message = '') {
+      if (authSection) authSection.hidden = false;
       loginPanel.hidden = false;
       pendingPanel.hidden = true;
       board.hidden = true;
-      error.textContent = message;
+      loginError.textContent = message;
     }
 
     function showPending(user) {
+      if (authSection) authSection.hidden = false;
       loginPanel.hidden = true;
       pendingPanel.hidden = false;
       board.hidden = true;
@@ -78,19 +396,345 @@
       pendingEmail.textContent = user.email || 'No email attached';
     }
 
+    function updateHUD(challenges, score) {
+      const total = challenges.length || 6;
+      const solved = challenges.filter(c => c.status === 'solved').length;
+      hudScore.textContent = score;
+      hudSolves.textContent = solved;
+      const pct = Math.round((solved / total) * 100);
+      hudPercent.textContent = `${pct}%`;
+      hudProgressFill.style.width = `${pct}%`;
+
+      const nextAvailable = challenges.find(c => c.status === 'available');
+      if (nextAvailable) {
+        hudClearance.textContent = `STAGE ${String(nextAvailable.id).padStart(2, '0')}`;
+        hudClearance.style.color = 'var(--coral)';
+      } else if (solved === total) {
+        hudClearance.textContent = 'ALL CLEARED';
+        hudClearance.style.color = 'var(--jade)';
+      } else {
+        hudClearance.textContent = 'STAGE 01';
+      }
+    }
+
     function renderChallenges(challenges) {
-      list.replaceChildren(...challenges.map((challenge) => {
+      cachedChallenges = challenges;
+      challengeList.replaceChildren(...challenges.map((c) => {
         const card = document.createElement('article');
-        card.className = `challenge ${challenge.status}`;
-        card.innerHTML = `<div class="stage"></div><div><p class="status"></p><h3></h3><p class="points"></p></div><span class="arrow"></span>`;
-        card.querySelector('.stage').textContent = String(challenge.id).padStart(2, '0');
-        card.querySelector('.status').textContent = challenge.status;
-        card.querySelector('h3').textContent = challenge.title;
-        card.querySelector('.points').textContent = `${challenge.points} points`;
-        card.querySelector('.arrow').textContent = challenge.status === 'available' ? '→' : '×';
+        card.className = `challenge-card ${c.status}`;
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', c.status !== 'locked' ? '0' : '-1');
+
+        let statusText = 'LOCKED';
+        let actionIcon = '🔒';
+        if (c.status === 'solved') {
+          statusText = '✓ SOLVED';
+          actionIcon = '✓';
+        } else if (c.status === 'available') {
+          statusText = 'ACTIVE OBJECTIVE';
+          actionIcon = '→';
+        }
+
+        card.innerHTML = `
+          <div class="stage-num">${String(c.id).padStart(2, '0')}</div>
+          <div class="card-body">
+            <div class="card-header-line">
+              <span class="category-tag">${c.category || 'EXPLOIT'}</span>
+              <span class="status-badge">${statusText}</span>
+            </div>
+            <h3>${c.title}</h3>
+            <div class="card-footer-line">
+              <span class="card-points">${c.points} PTS</span>
+              <span>·</span>
+              <span>${c.difficulty || 'Normal'}</span>
+            </div>
+          </div>
+          <div class="card-action-icon">${actionIcon}</div>
+        `;
+
+        if (c.status !== 'locked') {
+          card.addEventListener('click', () => openChallengeModal(c.id));
+          card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              openChallengeModal(c.id);
+            }
+          });
+        }
+
         return card;
       }));
     }
+
+    async function openChallengeModal(stageId) {
+      currentOpenStageId = stageId;
+      flagFeedback.className = 'submission-msg';
+      flagFeedback.textContent = '';
+      flagInput.value = '';
+
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+
+      try {
+        const { challenge } = await request(`/api/v1/challenges/${stageId}`);
+        modalStagePill.textContent = `STAGE ${String(challenge.id).padStart(2, '0')}`;
+        modalCategoryTag.textContent = challenge.category;
+        modalPointsPill.textContent = `${challenge.points} PTS`;
+        modalTitle.textContent = challenge.title;
+
+        if (challenge.solved) {
+          modalStatusBadge.textContent = 'SOLVED';
+          modalStatusBadge.style.color = 'var(--jade)';
+          modalSolvedBanner.hidden = false;
+          modalSubmissionForm.hidden = true;
+        } else {
+          modalStatusBadge.textContent = 'AVAILABLE';
+          modalStatusBadge.style.color = 'var(--coral)';
+          modalSolvedBanner.hidden = true;
+          modalSubmissionForm.hidden = false;
+        }
+
+        modalBriefing.textContent = challenge.briefing;
+        modalTargetType.textContent = challenge.target_info?.type || 'Isolated Sandbox Node';
+
+        // In-browser terminal availability (Stage 5 & 6)
+        if (stageId === 5 || stageId === 6) {
+          modalTerminalSection.hidden = false;
+          modalTerminalWrapper.hidden = true;
+          btnToggleModalTerminal.textContent = 'EXPAND TERMINAL ▾';
+          modalTerminalFrame.src = '';
+        } else {
+          modalTerminalSection.hidden = true;
+          modalTerminalWrapper.hidden = true;
+          modalTerminalFrame.src = '';
+        }
+
+        // Render target endpoints
+        const endpoints = challenge.target_info?.endpoints || [];
+        modalEndpointsList.replaceChildren(...endpoints.map(ep => createTelemetryRow(ep)));
+
+        // Render tactical commands
+        const commands = challenge.target_info?.commands || [];
+        modalCommandsList.replaceChildren(...commands.map(cmd => createTelemetryRow(cmd)));
+
+        // Render instructions
+        const instructions = challenge.instructions || [];
+        modalInstructions.replaceChildren(...instructions.map(inst => {
+          const li = document.createElement('li');
+          li.textContent = inst;
+          return li;
+        }));
+
+        // Render hints accordions
+        const hints = challenge.hints || [];
+        modalHints.replaceChildren(...hints.map((hint, idx) => {
+          const acc = document.createElement('div');
+          acc.className = 'hint-accordion';
+
+          const header = document.createElement('div');
+          header.className = 'hint-header';
+          header.innerHTML = `
+            <span>HINT ${idx + 1} // INTEL HINT</span>
+            <span class="hint-toggle-action">REVEAL INTEL ▾</span>
+          `;
+
+          const content = document.createElement('div');
+          content.className = 'hint-content';
+          content.hidden = true;
+          content.textContent = hint;
+
+          header.addEventListener('click', () => {
+            const isHidden = content.hidden;
+            content.hidden = !isHidden;
+            header.querySelector('.hint-toggle-action').textContent = isHidden ? 'COLLAPSE ▴' : 'REVEAL INTEL ▾';
+          });
+
+          acc.appendChild(header);
+          acc.appendChild(content);
+          return acc;
+        }));
+
+      } catch (err) {
+        alert(`Failed to load challenge intel: ${err.message}`);
+        closeChallengeModal();
+      }
+    }
+
+    function createTelemetryRow(text) {
+      const row = document.createElement('div');
+      row.className = 'telemetry-item';
+
+      const code = document.createElement('span');
+      code.className = 'telemetry-code';
+      code.textContent = text;
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn-copy';
+      copyBtn.type = 'button';
+      copyBtn.textContent = 'COPY';
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(text);
+          copyBtn.textContent = 'COPIED!';
+          copyBtn.classList.add('copied');
+          setTimeout(() => {
+            copyBtn.textContent = 'COPY';
+            copyBtn.classList.remove('copied');
+          }, 2000);
+        } catch {
+          copyBtn.textContent = 'ERROR';
+        }
+      });
+
+      row.appendChild(code);
+      row.appendChild(copyBtn);
+      return row;
+    }
+
+    function closeChallengeModal() {
+      modal.hidden = true;
+      document.body.style.overflow = '';
+      currentOpenStageId = null;
+      if (modalTerminalFrame) modalTerminalFrame.src = '';
+      if (modalTerminalWrapper) modalTerminalWrapper.hidden = true;
+      if (btnToggleModalTerminal) btnToggleModalTerminal.textContent = 'EXPAND TERMINAL ▾';
+    }
+
+    modalCloseBtn.addEventListener('click', closeChallengeModal);
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeChallengeModal();
+    });
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !modal.hidden) closeChallengeModal();
+    });
+
+    // In-modal Terminal Toggle
+    btnToggleModalTerminal.addEventListener('click', () => {
+      const isHidden = modalTerminalWrapper.hidden;
+      modalTerminalWrapper.hidden = !isHidden;
+      btnToggleModalTerminal.textContent = isHidden ? 'COLLAPSE TERMINAL ▴' : 'EXPAND TERMINAL ▾';
+      if (isHidden && (!modalTerminalFrame.src || !modalTerminalFrame.src.includes('/terminal/'))) {
+        modalTerminalFrame.src = '/terminal/';
+      }
+    });
+
+    // Exploit Macro Buttons (Clipboard copy)
+    document.querySelectorAll('.macro-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const cmd = btn.getAttribute('data-cmd');
+        if (!cmd) return;
+        try {
+          await navigator.clipboard.writeText(cmd);
+          const original = btn.textContent;
+          btn.textContent = 'COPIED!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = original;
+            btn.classList.remove('copied');
+          }, 1500);
+        } catch (_) {}
+      });
+    });
+
+    // Flag Submission
+    flagForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!currentOpenStageId) return;
+
+      const flag = flagInput.value.trim();
+      if (!flag) return;
+
+      submitFlagBtn.disabled = true;
+      submitFlagBtn.textContent = 'VALIDATING…';
+      flagFeedback.className = 'submission-msg';
+      flagFeedback.textContent = '';
+
+      try {
+        const res = await request(`/api/v1/challenges/${currentOpenStageId}/submit`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ flag }),
+        });
+
+        flagFeedback.className = 'submission-msg success';
+        flagFeedback.textContent = res.message || 'Flag accepted!';
+        modalSolvedBanner.hidden = false;
+        modalSubmissionForm.hidden = true;
+        modalStatusBadge.textContent = 'SOLVED';
+        modalStatusBadge.style.color = 'var(--jade)';
+
+        // Refresh challenges & board state
+        const data = await request('/api/v1/challenges');
+        renderChallenges(data.challenges);
+        updateHUD(data.challenges, data.score);
+
+      } catch (err) {
+        flagFeedback.className = 'submission-msg error';
+        flagFeedback.textContent = err.message || 'Verification rejected.';
+      } finally {
+        submitFlagBtn.disabled = false;
+        submitFlagBtn.textContent = 'TRANSMIT FLAG →';
+      }
+    });
+
+    // Leaderboard
+    async function loadLeaderboard() {
+      try {
+        const { teams } = await request('/api/v1/leaderboard');
+        if (!teams.length) {
+          leaderboardRows.innerHTML = '<tr><td colspan="5" class="muted" style="text-align:center;font-family:\'DM Mono\';">No challenge submissions recorded yet.</td></tr>';
+          return;
+        }
+
+        leaderboardRows.replaceChildren(...teams.map((t) => {
+          const tr = document.createElement('tr');
+          const rankClass = t.rank === 1 ? 'rank-1' : t.rank === 2 ? 'rank-2' : t.rank === 3 ? 'rank-3' : '';
+          const lastSolve = t.last_solve ? new Date(t.last_solve).toLocaleTimeString() : '—';
+
+          tr.innerHTML = `
+            <td><span class="rank-pill ${rankClass}">${t.rank}</span></td>
+            <td><strong>${t.username}</strong></td>
+            <td><span class="pill jade">${t.solves} / 6</span></td>
+            <td><strong style="color:var(--coral);font-size:16px;">${t.score} PTS</strong></td>
+            <td><span class="muted" style="font-family:'DM Mono';font-size:12px;">${lastSolve}</span></td>
+          `;
+          return tr;
+        }));
+      } catch (err) {
+        leaderboardRows.innerHTML = `<tr><td colspan="5" class="error" style="text-align:center;">Failed to load leaderboard: ${err.message}</td></tr>`;
+      }
+    }
+
+    tabChallenges.addEventListener('click', () => {
+      tabChallenges.classList.add('active');
+      tabLeaderboard.classList.remove('active');
+      tabTerminal.classList.remove('active');
+      challengeView.hidden = false;
+      leaderboardView.hidden = true;
+      terminalView.hidden = true;
+    });
+
+    tabLeaderboard.addEventListener('click', () => {
+      tabLeaderboard.classList.add('active');
+      tabChallenges.classList.remove('active');
+      tabTerminal.classList.remove('active');
+      challengeView.hidden = true;
+      leaderboardView.hidden = false;
+      terminalView.hidden = true;
+      loadLeaderboard();
+    });
+
+    tabTerminal.addEventListener('click', () => {
+      tabTerminal.classList.add('active');
+      tabChallenges.classList.remove('active');
+      tabLeaderboard.classList.remove('active');
+      challengeView.hidden = true;
+      leaderboardView.hidden = true;
+      terminalView.hidden = false;
+      if (!mainTerminalFrame.src || !mainTerminalFrame.src.includes('/terminal/')) {
+        mainTerminalFrame.src = '/terminal/';
+      }
+    });
 
     async function showBoard(user) {
       if (user.status === 'pending') {
@@ -98,35 +742,45 @@
         return;
       }
       if (user.status === 'rejected') {
-        showLogin('Your account has been rejected by an administrator.');
+        showLogin('Your account clearance has been rejected by an administrator.');
         return;
       }
 
+      if (authSection) authSection.hidden = true;
       loginPanel.hidden = true;
       pendingPanel.hidden = true;
       board.hidden = false;
-      username.textContent = user.username;
+      usernameEl.textContent = user.username;
+
       try {
-        const { challenges } = await request('/api/v1/challenges');
-        renderChallenges(challenges);
-      } catch (exception) {
-        if (exception.status === 403) {
+        const data = await request('/api/v1/challenges');
+        renderChallenges(data.challenges);
+        updateHUD(data.challenges, data.score);
+      } catch (err) {
+        if (err.status === 403) {
           showPending(user);
         } else {
-          showLogin(exception.message);
+          showLogin(err.message);
         }
       }
     }
 
-    form.addEventListener('submit', async (event) => {
-      event.preventDefault();
-      error.textContent = '';
-      const body = Object.fromEntries(new FormData(form));
+    // Login Form
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      loginError.textContent = '';
+      const body = Object.fromEntries(new FormData(loginForm));
       try {
-        const { user } = await request('/api/v1/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-        form.reset();
+        const { user } = await request('/api/v1/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        });
+        loginForm.reset();
         await showBoard(user);
-      } catch (exception) { error.textContent = exception.message; }
+      } catch (err) {
+        loginError.textContent = err.message;
+      }
     });
 
     async function handleLogout() {
@@ -146,6 +800,7 @@
       }
     });
 
+    // Check OAuth error or fetch initial session
     const params = new URLSearchParams(window.location.search);
     if (params.has('oauth_error')) {
       showLogin('Google authentication failed: ' + params.get('oauth_error'));

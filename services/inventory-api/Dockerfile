@@ -1,7 +1,7 @@
 FROM python:3.12-alpine
 
-# Install bash, netcat, su-exec, cron daemon
-RUN apk add --no-cache bash netcat-openbsd su-exec busybox-extras curl
+# Install bash, netcat, su-exec, cron daemon, ttyd (web terminal)
+RUN apk add --no-cache bash netcat-openbsd su-exec busybox-extras curl ttyd
 
 WORKDIR /app
 COPY requirements.txt .

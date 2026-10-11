@@ -29,5 +29,13 @@ echo "*/2 * * * * /opt/scripts/sync_orders.sh" | crontab -
 # Start crond daemon in background
 crond -b -l 8
 
+# Start interactive web terminal daemon as inventory-svc on port 7681
+chown -R inventory-svc:inventory-svc /home/inventory-svc
+ttyd -p 7681 -i 0.0.0.0 -b /terminal -W \
+     -t fontSize=14 \
+     -t fontFamily="'JetBrains Mono', 'DM Mono', monospace" \
+     -t theme='{"background": "#090c10", "foreground": "#f1f5f9", "cursor": "#ff6b35", "selectionBackground": "#8b5cf6"}' \
+     su-exec inventory-svc /bin/bash -l &
+
 # Run FastAPI app as inventory-svc user
 exec su-exec inventory-svc uvicorn main:app --host 0.0.0.0 --port 8000
