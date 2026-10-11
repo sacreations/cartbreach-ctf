@@ -11,7 +11,7 @@ from typing import Any
 import bcrypt
 import httpx
 import psycopg
-from fastapi import Cookie, Depends, FastAPI, HTTPException, Response
+from fastapi import Cookie, Depends, FastAPI, HTTPException, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel
@@ -90,13 +90,14 @@ CHALLENGES_DATA = [
             "protocol": "HTTP / Git Version Control",
             "endpoints": [
                 "http://localhost:8080/cartbreach/storefront-web.git",
+                "http://git.cartbreach.local:8080/cartbreach/storefront-web.git",
                 "http://localhost/api/v1/health",
             ],
             "auth_context": "Anonymous Git clone; Bearer Token required on /api/v1/health",
         },
         "suggested_tools": ["git", "curl", "trufflehog", "gitleaks"],
         "instructions": [
-            "Clone and examine the public Git mirror repository from port 8080.",
+            "Clone and examine the public Git mirror repository using the provided endpoint.",
             "Audit commit history and patch diffs for inadvertently committed authentication credentials.",
             "Validate the discovered credential against the storefront API health check endpoint to recover the flag.",
         ],
@@ -369,14 +370,36 @@ def login(payload: LoginRequest, response: Response) -> dict[str, Any]:
     return {"user": safe_user}
 
 
+def get_effective_google_redirect_uri(request: Request | None = None) -> str:
+    default_local_uri = "http://portal.cartbreach.local/api/v1/auth/google/callback"
+    custom_uri = os.getenv("GOOGLE_REDIRECT_URI", "").strip()
+    if custom_uri and custom_uri != default_local_uri:
+        return custom_uri
+
+    if request is not None:
+        host = (
+            request.headers.get("x-forwarded-host")
+            or request.headers.get("host")
+            or ""
+        ).split(":")[0].strip().lower()
+        proto = (request.headers.get("x-forwarded-proto") or "").strip().lower()
+        local_indicators = ("localhost", "127.0.0.1", "cartbreach.local", ".local")
+        if host and not any(host.endswith(loc) or host == loc for loc in local_indicators):
+            scheme = proto or "https"
+            return f"{scheme}://{host}/api/v1/auth/google/callback"
+
+    return custom_uri or default_local_uri
+
+
 @app.get("/api/v1/auth/google/login")
-def google_login() -> RedirectResponse:
+def google_login(request: Request) -> RedirectResponse:
     if GOOGLE_CLIENT_ID:
         state = secrets.token_urlsafe(16)
         oauth_states[state] = time.time() + 600
+        redirect_uri = get_effective_google_redirect_uri(request)
         params = {
             "client_id": GOOGLE_CLIENT_ID,
-            "redirect_uri": GOOGLE_REDIRECT_URI,
+            "redirect_uri": redirect_uri,
             "response_type": "code",
             "scope": "openid email profile",
             "state": state,
@@ -390,6 +413,7 @@ def google_login() -> RedirectResponse:
 
 @app.get("/api/v1/auth/google/callback")
 async def google_callback(
+    request: Request,
     code: str | None = None,
     state: str | None = None,
     error: str | None = None,
@@ -410,6 +434,7 @@ async def google_callback(
     else:
         if not code:
             raise HTTPException(status_code=400, detail="Missing authorization code")
+        redirect_uri = get_effective_google_redirect_uri(request)
         async with httpx.AsyncClient(timeout=10.0) as client:
             token_res = await client.post(
                 "https://oauth2.googleapis.com/token",
@@ -417,7 +442,7 @@ async def google_callback(
                     "code": code,
                     "client_id": GOOGLE_CLIENT_ID,
                     "client_secret": GOOGLE_CLIENT_SECRET,
-                    "redirect_uri": GOOGLE_REDIRECT_URI,
+                    "redirect_uri": redirect_uri,
                     "grant_type": "authorization_code",
                 },
             )
@@ -511,6 +536,155 @@ def get_user_solved_stages(user_id: int) -> set[int]:
         return set()
 
 
+def resolve_stage_endpoints(stage_id: int, request: Request | None = None) -> list[str]:
+    public_domain = os.getenv("PUBLIC_DOMAIN", "").strip()
+    public_scheme = os.getenv("PUBLIC_SCHEME", "https").strip().lower()
+    public_storefront_url = os.getenv("PUBLIC_STOREFRONT_URL", "").strip().rstrip("/")
+    public_git_url = os.getenv("PUBLIC_GIT_URL", "").strip().rstrip("/")
+    public_portal_url = os.getenv("PUBLIC_PORTAL_URL", "").strip().rstrip("/")
+    public_inventory_url = os.getenv("PUBLIC_INVENTORY_URL", "").strip().rstrip("/")
+
+    base_domain = public_domain
+    scheme = public_scheme or "https"
+
+    if request is not None:
+        host_header = (
+            request.headers.get("x-forwarded-host")
+            or request.headers.get("host")
+            or ""
+        ).split(":")[0].strip().lower()
+
+        proto_header = (
+            request.headers.get("x-forwarded-proto")
+            or ""
+        ).strip().lower()
+
+        if not proto_header and "cf-visitor" in request.headers:
+            try:
+                import json
+                proto_header = json.loads(request.headers["cf-visitor"]).get("scheme", "")
+            except Exception:
+                pass
+
+        if proto_header:
+            scheme = proto_header
+
+        local_indicators = (
+            "localhost",
+            "127.0.0.1",
+            "testclient",
+            "cartbreach.local",
+            ".local",
+        )
+        is_local_host = (
+            not host_header
+            or any(host_header.endswith(ind) or host_header == ind for ind in local_indicators)
+            or host_header.startswith("192.168.")
+            or host_header.startswith("10.")
+            or host_header.startswith("172.")
+        )
+
+        if not is_local_host and not base_domain:
+            for prefix in ("portal.", "admin.", "git.", "store.", "shop.", "inventory.", "api."):
+                if host_header.startswith(prefix):
+                    base_domain = host_header[len(prefix):]
+                    break
+            if not base_domain:
+                base_domain = host_header
+
+    has_public = bool(base_domain or public_storefront_url or public_git_url or public_inventory_url or public_portal_url)
+
+    store_url = public_storefront_url or (f"{scheme}://store.{base_domain}" if base_domain else "")
+    git_url = public_git_url or (f"{scheme}://git.{base_domain}" if base_domain else "")
+    inv_url = public_inventory_url or (f"{scheme}://inventory.{base_domain}" if base_domain else "")
+    portal_url = public_portal_url or (f"{scheme}://portal.{base_domain}" if base_domain else "")
+
+    stage_definitions: dict[int, dict[str, list[str]]] = {
+        1: {
+            "hosted": [
+                f"{git_url}/cartbreach/storefront-web.git",
+                f"{store_url}/api/v1/health",
+            ],
+            "local": [
+                "http://localhost:8080/cartbreach/storefront-web.git",
+                "http://git.cartbreach.local:8080/cartbreach/storefront-web.git",
+                "http://localhost/api/v1/health",
+            ],
+        },
+        2: {
+            "hosted": [
+                f"{store_url}/login",
+                f"{store_url}/api/orders?order_id=<id>",
+            ],
+            "local": [
+                "http://localhost/login",
+                "http://localhost/api/orders?order_id=<id>",
+            ],
+        },
+        3: {
+            "hosted": [
+                f"{store_url}/api/v1/payment/sample",
+                f"{store_url}/api/v1/payment/callback",
+            ],
+            "local": [
+                "http://localhost/api/v1/payment/sample",
+                "http://localhost/api/v1/payment/callback",
+            ],
+        },
+        4: {
+            "hosted": [
+                f"{store_url}/static/backups/storefront_backup.sql.gz",
+            ],
+            "local": [
+                "http://localhost/static/backups/storefront_backup.sql.gz",
+            ],
+        },
+        5: {
+            "hosted": [
+                f"{inv_url}/api/v1/admin/export",
+            ],
+            "local": [
+                "http://localhost:8000/api/v1/admin/export",
+                "http://inventory.cartbreach.local/api/v1/admin/export",
+            ],
+        },
+        6: {
+            "hosted": [
+                f"{portal_url}/terminal/ (Interactive Web Terminal)",
+                "cartbreach-inventory container environment",
+            ],
+            "local": [
+                "http://portal.cartbreach.local/terminal/ (Interactive Web Terminal)",
+                "cartbreach-inventory container environment",
+            ],
+        },
+    }
+
+    config = stage_definitions.get(stage_id)
+    if not config:
+        return []
+
+    local_endpoints = config["local"]
+    if not has_public:
+        return local_endpoints
+
+    hosted_endpoints = [ep for ep in config["hosted"] if not ep.startswith("/")]
+
+    combined: list[str] = []
+    for ep in hosted_endpoints:
+        if ep == "cartbreach-inventory container environment":
+            continue
+        combined.append(f"[PUBLIC] {ep}")
+
+    for ep in local_endpoints:
+        if ep == "cartbreach-inventory container environment":
+            combined.append(ep)
+        else:
+            combined.append(f"[LOCAL]  {ep}")
+
+    return combined
+
+
 @app.get("/api/v1/challenges")
 def list_challenges(user: dict[str, Any] = Depends(require_approved_user)) -> dict[str, Any]:
     solved_set = get_user_solved_stages(user["id"])
@@ -546,7 +720,11 @@ def list_challenges(user: dict[str, Any] = Depends(require_approved_user)) -> di
 
 
 @app.get("/api/v1/challenges/{stage_id}")
-def get_challenge(stage_id: int, user: dict[str, Any] = Depends(require_approved_user)) -> dict[str, Any]:
+def get_challenge(
+    stage_id: int,
+    request: Request,
+    user: dict[str, Any] = Depends(require_approved_user),
+) -> dict[str, Any]:
     stage = next((s for s in CHALLENGES_DATA if s["id"] == stage_id), None)
     if stage is None:
         raise HTTPException(status_code=404, detail="Challenge not found")
@@ -559,6 +737,9 @@ def get_challenge(stage_id: int, user: dict[str, Any] = Depends(require_approved
         raise HTTPException(status_code=403, detail="Prerequisite challenge must be solved first")
 
     status = "solved" if is_solved else "available"
+    target_info = dict(stage["target_info"])
+    target_info["endpoints"] = resolve_stage_endpoints(stage["id"], request)
+
     return {
         "challenge": {
             "id": stage["id"],
@@ -569,7 +750,7 @@ def get_challenge(stage_id: int, user: dict[str, Any] = Depends(require_approved
             "points": stage["points"],
             "status": status,
             "briefing": stage["briefing"],
-            "target_info": stage["target_info"],
+            "target_info": target_info,
             "suggested_tools": stage.get("suggested_tools", []),
             "instructions": stage["instructions"],
             "hints": stage["hints"],
@@ -689,6 +870,19 @@ def list_admin_users(_: dict[str, Any] = Depends(require_admin)) -> dict[str, An
     users = query_database(
         "SELECT id, username, email, role, status, auth_provider, created_at FROM users ORDER BY id ASC"
     )
+    try:
+        user_solves = query_database(
+            "SELECT user_id, stage_id FROM challenge_solves ORDER BY stage_id ASC"
+        )
+        solves_by_user: dict[int, list[int]] = {}
+        for s in user_solves:
+            uid = s["user_id"]
+            if uid not in solves_by_user:
+                solves_by_user[uid] = []
+            solves_by_user[uid].append(s["stage_id"])
+    except Exception:
+        solves_by_user = {}
+
     clean_users = [
         {
             "id": u["id"],
@@ -698,6 +892,8 @@ def list_admin_users(_: dict[str, Any] = Depends(require_admin)) -> dict[str, An
             "status": u.get("status", "approved"),
             "auth_provider": u.get("auth_provider", "local"),
             "created_at": u["created_at"].isoformat() if u.get("created_at") else None,
+            "solved_stages": solves_by_user.get(u["id"], []),
+            "solve_count": len(solves_by_user.get(u["id"], [])),
         }
         for u in users
     ]
@@ -734,4 +930,123 @@ def reject_user(user_id: int, _: dict[str, Any] = Depends(require_admin)) -> dic
             sess_user["status"] = "rejected"
             sessions[sid] = (sess_user, exp)
     return {"status": "ok", "user": user}
+
+
+@app.get("/api/v1/admin/challenges")
+def admin_challenges_status(_: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
+    try:
+        solves_rows = query_database("""
+            SELECT cs.stage_id, cs.user_id, cs.solved_at, u.username
+            FROM challenge_solves cs
+            JOIN users u ON cs.user_id = u.id
+            ORDER BY cs.solved_at ASC
+        """)
+        users_count = query_database(
+            "SELECT count(*) AS total_users, count(*) FILTER (WHERE status = 'approved' AND role = 'participant') AS approved_participants FROM users"
+        )
+    except Exception:
+        solves_rows = []
+        users_count = []
+
+    approved_participants = users_count[0]["approved_participants"] if users_count else 0
+    total_users = users_count[0]["total_users"] if users_count else 0
+
+    solves_by_stage: dict[int, list[dict[str, Any]]] = {stage["id"]: [] for stage in CHALLENGES_DATA}
+    solvers_by_user: dict[int, set[int]] = {}
+
+    for row in solves_rows:
+        sid = row["stage_id"]
+        uid = row["user_id"]
+        if sid in solves_by_stage:
+            solves_by_stage[sid].append({
+                "user_id": uid,
+                "username": row["username"],
+                "solved_at": row["solved_at"].isoformat() if row.get("solved_at") else None,
+            })
+        if uid not in solvers_by_user:
+            solvers_by_user[uid] = set()
+        solvers_by_user[uid].add(sid)
+
+    stages = []
+    total_possible_stages = len(CHALLENGES_DATA)
+    completed_all_count = sum(1 for stages_set in solvers_by_user.values() if len(stages_set) == total_possible_stages)
+
+    for stage in CHALLENGES_DATA:
+        sid = stage["id"]
+        stage_solves = solves_by_stage.get(sid, [])
+        solve_count = len(stage_solves)
+        solve_rate = round((solve_count / approved_participants * 100), 1) if approved_participants > 0 else 0.0
+
+        stages.append({
+            "id": sid,
+            "slug": stage["slug"],
+            "title": stage["title"],
+            "category": stage["category"],
+            "difficulty": stage["difficulty"],
+            "points": stage["points"],
+            "solve_count": solve_count,
+            "solve_rate": solve_rate,
+            "recent_solvers": stage_solves[-5:],
+            "solvers": stage_solves,
+        })
+
+    return {
+        "stages": stages,
+        "total_stages": total_possible_stages,
+        "total_solves": len(solves_rows),
+        "total_users": total_users,
+        "approved_participants": approved_participants,
+        "completed_all_count": completed_all_count,
+    }
+
+
+@app.post("/api/v1/admin/users/{user_id}/reset-challenges")
+def reset_user_challenges(user_id: int, _: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
+    users = query_database("SELECT id, username FROM users WHERE id = %s", (user_id,))
+    if not users:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = users[0]
+
+    deleted = query_database(
+        "DELETE FROM challenge_solves WHERE user_id = %s RETURNING stage_id",
+        (user_id,),
+    )
+    return {
+        "status": "ok",
+        "message": f"Successfully reset challenges for user {user['username']}",
+        "user_id": user_id,
+        "username": user["username"],
+        "cleared_count": len(deleted),
+        "cleared_stages": sorted([r["stage_id"] for r in deleted]),
+    }
+
+
+@app.post("/api/v1/admin/users/{user_id}/reset-challenges/{stage_id}")
+def reset_user_stage(user_id: int, stage_id: int, _: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
+    users = query_database("SELECT id, username FROM users WHERE id = %s", (user_id,))
+    if not users:
+        raise HTTPException(status_code=404, detail="User not found")
+    user = users[0]
+
+    deleted = query_database(
+        "DELETE FROM challenge_solves WHERE user_id = %s AND stage_id = %s RETURNING stage_id",
+        (user_id, stage_id),
+    )
+    return {
+        "status": "ok",
+        "message": f"Successfully reset stage {stage_id} for user {user['username']}",
+        "user_id": user_id,
+        "stage_id": stage_id,
+        "cleared": bool(deleted),
+    }
+
+
+@app.post("/api/v1/admin/challenges/reset-all")
+def reset_all_challenges(_: dict[str, Any] = Depends(require_admin)) -> dict[str, Any]:
+    deleted = query_database("DELETE FROM challenge_solves RETURNING id")
+    return {
+        "status": "ok",
+        "message": f"Successfully reset all challenge solves ({len(deleted)} cleared)",
+        "cleared_count": len(deleted),
+    }
 

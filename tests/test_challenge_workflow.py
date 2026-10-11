@@ -186,5 +186,200 @@ class TestChallengeWorkflow(unittest.TestCase):
         self.assertEqual(teams[1]["rank"], 2)
 
 
+    @patch("app.main.query_database")
+    def test_get_stage_details_dynamic_domain(self, mock_query):
+        mock_query.return_value = []
+
+        # When accessed through Cloudflare tunnel host
+        response = self.client.get(
+            "/api/v1/challenges/1",
+            headers={
+                "Host": "portal.my-ctf.com",
+                "X-Forwarded-Proto": "https",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        endpoints = response.json()["challenge"]["target_info"]["endpoints"]
+        # Should have both hosted domain and local fallback endpoints
+        self.assertTrue(any("https://git.my-ctf.com" in ep for ep in endpoints))
+        self.assertTrue(any("http://localhost:8080" in ep for ep in endpoints))
+        self.assertTrue(any("[PUBLIC]" in ep for ep in endpoints))
+        self.assertTrue(any("[LOCAL]" in ep for ep in endpoints))
+
+    @patch("app.main.query_database")
+    def test_get_stage_details_local_mode(self, mock_query):
+        mock_query.return_value = []
+
+        # When accessed locally via localhost
+        response = self.client.get(
+            "/api/v1/challenges/1",
+            headers={"Host": "localhost:8000"},
+        )
+        self.assertEqual(response.status_code, 200)
+        endpoints = response.json()["challenge"]["target_info"]["endpoints"]
+        # Should contain local endpoints without requiring public prefix
+        self.assertTrue(any("http://localhost:8080" in ep for ep in endpoints))
+        self.assertFalse(any("[PUBLIC]" in ep for ep in endpoints))
+
+    @patch("app.main.query_database")
+    def test_stage_6_hosted_terminal_endpoint(self, mock_query):
+        mock_query.return_value = [{"stage_id": i} for i in range(1, 6)]
+
+        response = self.client.get(
+            "/api/v1/challenges/6",
+            headers={
+                "Host": "portal.ctf-event.org",
+                "X-Forwarded-Proto": "https",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        endpoints = response.json()["challenge"]["target_info"]["endpoints"]
+        self.assertTrue(any("https://portal.ctf-event.org/terminal/" in ep for ep in endpoints))
+        self.assertTrue(any("http://portal.cartbreach.local/terminal/" in ep for ep in endpoints))
+
+    def _set_admin_session(self):
+        admin_user = {
+            "id": 1,
+            "username": "admin",
+            "email": "admin@cartbreach.local",
+            "role": "admin",
+            "status": "approved",
+            "auth_provider": "local",
+        }
+        token = "test-admin-session-token"
+        sessions[token] = (admin_user, time.time() + 3600)
+        self.client.cookies.set("cartbreach_session", token)
+        return admin_user
+
+    def test_admin_challenges_status_forbidden_for_participant(self):
+        response = self.client.get("/api/v1/admin/challenges")
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("Admin access required", response.json()["detail"])
+
+    @patch("app.main.query_database")
+    def test_admin_challenges_status_success(self, mock_query):
+        self._set_admin_session()
+        mock_query.side_effect = [
+            [
+                {
+                    "stage_id": 1,
+                    "user_id": 10,
+                    "username": "agent_alpha",
+                    "solved_at": None,
+                }
+            ],
+            [
+                {
+                    "total_users": 5,
+                    "approved_participants": 2,
+                }
+            ],
+        ]
+
+        response = self.client.get("/api/v1/admin/challenges")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["total_stages"], 6)
+        self.assertEqual(data["total_solves"], 1)
+        self.assertEqual(data["total_users"], 5)
+        self.assertEqual(data["approved_participants"], 2)
+        self.assertEqual(data["completed_all_count"], 0)
+
+        stages = data["stages"]
+        self.assertEqual(len(stages), 6)
+        stage_1 = stages[0]
+        self.assertEqual(stage_1["id"], 1)
+        self.assertEqual(stage_1["solve_count"], 1)
+        self.assertEqual(stage_1["solve_rate"], 50.0)
+        self.assertEqual(len(stage_1["solvers"]), 1)
+        self.assertEqual(stage_1["solvers"][0]["username"], "agent_alpha")
+
+    @patch("app.main.query_database")
+    def test_admin_reset_user_challenges(self, mock_query):
+        self._set_admin_session()
+        mock_query.side_effect = [
+            [{"id": 10, "username": "agent_alpha"}],
+            [{"stage_id": 1}, {"stage_id": 2}],
+        ]
+
+        response = self.client.post("/api/v1/admin/users/10/reset-challenges")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["user_id"], 10)
+        self.assertEqual(result["username"], "agent_alpha")
+        self.assertEqual(result["cleared_count"], 2)
+        self.assertEqual(result["cleared_stages"], [1, 2])
+
+    def test_admin_reset_user_challenges_forbidden_for_participant(self):
+        response = self.client.post("/api/v1/admin/users/10/reset-challenges")
+        self.assertEqual(response.status_code, 403)
+        self.assertIn("Admin access required", response.json()["detail"])
+
+    @patch("app.main.query_database")
+    def test_admin_reset_user_challenges_not_found(self, mock_query):
+        self._set_admin_session()
+        mock_query.return_value = []
+
+        response = self.client.post("/api/v1/admin/users/999/reset-challenges")
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("User not found", response.json()["detail"])
+
+    @patch("app.main.query_database")
+    def test_admin_reset_user_stage(self, mock_query):
+        self._set_admin_session()
+        mock_query.side_effect = [
+            [{"id": 10, "username": "agent_alpha"}],
+            [{"stage_id": 2}],
+        ]
+
+        response = self.client.post("/api/v1/admin/users/10/reset-challenges/2")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["user_id"], 10)
+        self.assertEqual(result["stage_id"], 2)
+        self.assertTrue(result["cleared"])
+
+    @patch("app.main.query_database")
+    def test_admin_reset_all_challenges(self, mock_query):
+        self._set_admin_session()
+        mock_query.return_value = [{"id": 1}, {"id": 2}, {"id": 3}]
+
+        response = self.client.post("/api/v1/admin/challenges/reset-all")
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["status"], "ok")
+        self.assertEqual(result["cleared_count"], 3)
+
+    @patch("app.main.query_database")
+    def test_admin_users_includes_solve_progress(self, mock_query):
+        self._set_admin_session()
+        mock_query.side_effect = [
+            [
+                {
+                    "id": 10,
+                    "username": "agent_alpha",
+                    "email": "agent@cartbreach.local",
+                    "role": "participant",
+                    "status": "approved",
+                    "auth_provider": "local",
+                    "created_at": None,
+                }
+            ],
+            [
+                {"user_id": 10, "stage_id": 1},
+                {"user_id": 10, "stage_id": 3},
+            ],
+        ]
+
+        response = self.client.get("/api/v1/admin/users")
+        self.assertEqual(response.status_code, 200)
+        users = response.json()["users"]
+        self.assertEqual(len(users), 1)
+        self.assertEqual(users[0]["solved_stages"], [1, 3])
+        self.assertEqual(users[0]["solve_count"], 2)
+
+
 if __name__ == "__main__":
     unittest.main()

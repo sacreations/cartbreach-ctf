@@ -54,6 +54,7 @@ git commit -m "Sanitize configuration and remove dev secrets"
 
 # Expose bare Git repository at /var/git/cartbreach/storefront-web.git
 mkdir -p /var/git/cartbreach
+rm -rf /var/git/cartbreach/storefront-web.git
 git clone --bare /tmp/seed-repo /var/git/cartbreach/storefront-web.git
 rm -rf /tmp/seed-repo
 

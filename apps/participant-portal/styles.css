@@ -693,9 +693,39 @@ body {
   color: var(--text);
 }
 
-.telemetry-code {
+.telemetry-content {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
   word-break: break-all;
   margin-right: 12px;
+}
+
+.telemetry-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+
+.telemetry-badge.public {
+  background: rgba(0, 229, 255, 0.12);
+  color: #00e5ff;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+}
+
+.telemetry-badge.local {
+  background: rgba(255, 179, 0, 0.1);
+  color: #ffb300;
+  border: 1px solid rgba(255, 179, 0, 0.3);
+}
+
+.telemetry-code {
+  word-break: break-all;
 }
 
 .btn-copy {

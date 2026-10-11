@@ -724,6 +724,228 @@ footer a {
   }
 }
 
+/* Challenge Progression Matrix */
+.challenges-matrix-card {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  overflow: hidden;
+  margin-bottom: 28px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  padding: 24px;
+  background: #090e18;
+}
+
+@media (max-width: 1024px) {
+  .challenge-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 680px) {
+  .challenge-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.challenge-stage-card {
+  background: var(--panel-elevated);
+  border: 1px solid var(--line);
+  padding: 18px 20px;
+  border-radius: 2px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.challenge-stage-card:hover {
+  border-color: rgba(255, 107, 53, 0.4);
+  background: var(--panel-hover);
+  transform: translateY(-2px);
+}
+
+.stage-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stage-num-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--coral);
+  background: var(--coral-subtle);
+  border: 1px solid rgba(255, 107, 53, 0.3);
+  padding: 3px 8px;
+  border-radius: 2px;
+}
+
+.stage-pts-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--jade);
+  font-weight: 600;
+}
+
+.stage-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.stage-meta {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  color: var(--dim);
+  display: flex;
+  gap: 8px;
+}
+
+.stage-stats-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+.stage-solve-count {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.stage-solve-rate {
+  color: var(--jade);
+  font-weight: 600;
+}
+
+.progress-track {
+  width: 100%;
+  height: 6px;
+  background: #080c14;
+  border: 1px solid var(--line);
+  border-radius: 1px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--jade) 0%, var(--coral) 100%);
+  transition: width 0.4s ease;
+}
+
+.stage-solvers-list {
+  border-top: 1px dashed var(--line);
+  padding-top: 10px;
+  margin-top: 4px;
+}
+
+.solvers-label {
+  display: block;
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.solver-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.solver-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+}
+
+.solver-chip:hover {
+  border-color: var(--coral);
+  color: var(--text);
+}
+
+.badge-solves {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 2px;
+  background: rgba(139, 92, 246, 0.12);
+  color: var(--violet);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  display: inline-block;
+  font-weight: 600;
+}
+
+.stage-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.stage-pill {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  background: var(--jade-subtle);
+  color: var(--jade);
+  border: 1px solid rgba(0, 210, 106, 0.3);
+}
+
+.btn-reset {
+  background: transparent;
+  border-color: rgba(255, 107, 53, 0.4);
+  color: var(--coral);
+}
+
+.btn-reset:hover {
+  background: var(--coral-subtle);
+  border-color: var(--coral);
+  box-shadow: 0 0 8px var(--coral-glow);
+}
+
+.btn-reset-disabled {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  cursor: not-allowed;
+  border-radius: 2px;
+}
+
+.btn-danger {
+  background: var(--rose-subtle);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  color: var(--rose);
+}
+
+.btn-danger:hover {
+  background: var(--rose);
+  color: #080c14;
+  box-shadow: 0 0 10px var(--rose-subtle);
+}
+
 @media (max-width: 860px) {
   .shell { padding: 24px 20px; }
   .hero { padding: 50px 0 40px; }

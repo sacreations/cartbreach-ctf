@@ -581,9 +581,31 @@
       const row = document.createElement('div');
       row.className = 'telemetry-item';
 
+      const contentWrapper = document.createElement('div');
+      contentWrapper.className = 'telemetry-content';
+
+      let cleanText = text;
+      let badgeType = null;
+
+      if (text.startsWith('[PUBLIC]')) {
+        badgeType = 'public';
+        cleanText = text.replace(/^\[PUBLIC\]\s*/, '');
+      } else if (text.startsWith('[LOCAL]')) {
+        badgeType = 'local';
+        cleanText = text.replace(/^\[LOCAL\]\s*/, '');
+      }
+
+      if (badgeType) {
+        const badge = document.createElement('span');
+        badge.className = `telemetry-badge ${badgeType}`;
+        badge.textContent = badgeType.toUpperCase();
+        contentWrapper.appendChild(badge);
+      }
+
       const code = document.createElement('span');
       code.className = 'telemetry-code';
-      code.textContent = text;
+      code.textContent = cleanText;
+      contentWrapper.appendChild(code);
 
       const copyBtn = document.createElement('button');
       copyBtn.className = 'btn-copy';
@@ -591,7 +613,7 @@
       copyBtn.textContent = 'COPY';
       copyBtn.addEventListener('click', async () => {
         try {
-          await navigator.clipboard.writeText(text);
+          await navigator.clipboard.writeText(cleanText);
           copyBtn.textContent = 'COPIED!';
           copyBtn.classList.add('copied');
           setTimeout(() => {
@@ -603,7 +625,7 @@
         }
       });
 
-      row.appendChild(code);
+      row.appendChild(contentWrapper);
       row.appendChild(copyBtn);
       return row;
     }

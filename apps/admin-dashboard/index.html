@@ -132,6 +132,23 @@
         </div>
       </div>
 
+      <!-- Challenge Progression Matrix -->
+      <div class="challenges-matrix-card">
+        <div class="table-title-bar">
+          <div>
+            <h3>Challenge Progression Matrix & Status</h3>
+            <span class="muted" style="font-family:'DM Mono';font-size:11px;">Live stage completion telemetry, solve counts, and competitor unlock audit</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <button id="reset-all-challenges" class="btn-action btn-danger" type="button" title="Clear all flag captures for all participants">Reset All Solves ⚠</button>
+            <button id="refresh-challenges" class="link-button" type="button">Refresh Matrix ↻</button>
+          </div>
+        </div>
+        <div id="challenges-grid" class="challenge-grid">
+          <p class="muted" style="grid-column:1/-1;padding:20px;font-family:'DM Mono';text-align:center;">Polling challenge status matrix…</p>
+        </div>
+      </div>
+
       <!-- User Management Queue -->
       <div class="users-table-card">
         <div class="table-title-bar">
@@ -156,12 +173,13 @@
               <th>Provider</th>
               <th>Role</th>
               <th>Clearance</th>
+              <th>Progression</th>
               <th>Registered</th>
-              <th style="text-align:right;">Access Decisions</th>
+              <th style="text-align:right;">Access & Actions</th>
             </tr>
           </thead>
           <tbody id="user-rows">
-            <tr><td colspan="6" class="muted" style="text-align:center;font-family:'DM Mono';">Polling clearance registry…</td></tr>
+            <tr><td colspan="7" class="muted" style="text-align:center;font-family:'DM Mono';">Polling clearance registry…</td></tr>
           </tbody>
         </table>
       </div>
@@ -223,7 +241,7 @@
       }
 
       if (!filtered.length) {
-        userRows.innerHTML = `<tr><td colspan="6" class="muted" style="text-align:center;font-family:'DM Mono';">No accounts matching "${activeFilter.toUpperCase()}".</td></tr>`;
+        userRows.innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center;font-family:'DM Mono';">No accounts matching "${activeFilter.toUpperCase()}".</td></tr>`;
         return;
       }
 
@@ -232,6 +250,20 @@
         const registered = u.created_at ? new Date(u.created_at).toLocaleDateString() : '—';
         const email = u.email ? `<small class="muted" style="display:block;font-size:12px;">${u.email}</small>` : '';
 
+        let progression = '';
+        if (u.role === 'admin') {
+          progression = `<span class="muted" style="font-family:'DM Mono';font-size:11px;">ADMIN</span>`;
+        } else {
+          const count = u.solve_count || 0;
+          const stages = u.solved_stages || [];
+          progression = `
+            <div>
+              <span class="badge-solves">${count} / 6 Solved</span>
+              ${stages.length ? `<div class="stage-pills">${stages.map(s => `<span class="stage-pill">S${s}</span>`).join('')}</div>` : ''}
+            </div>
+          `;
+        }
+
         let actionButtons = '';
         if (u.status === 'pending') {
           actionButtons = `
@@ -239,9 +271,15 @@
             <button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Deny</button>
           `;
         } else if (u.status === 'rejected') {
-          actionButtons = `<button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Re-clear</button>`;
+          actionButtons = `
+            <button class="btn-action btn-approve" data-id="${u.id}" data-action="approve">Re-clear</button>
+            <button class="btn-action ${u.solve_count ? 'btn-reset' : 'btn-reset-disabled'}" data-id="${u.id}" data-username="${u.username}" data-action="reset-challenges" ${!u.solve_count ? 'disabled' : ''} title="${u.solve_count ? 'Reset challenge solves for this user' : 'No solves recorded'}">Reset</button>
+          `;
         } else if (u.role !== 'admin') {
-          actionButtons = `<button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Revoke</button>`;
+          actionButtons = `
+            <button class="btn-action btn-reject" data-id="${u.id}" data-action="reject">Revoke</button>
+            <button class="btn-action ${u.solve_count ? 'btn-reset' : 'btn-reset-disabled'}" data-id="${u.id}" data-username="${u.username}" data-action="reset-challenges" ${!u.solve_count ? 'disabled' : ''} title="${u.solve_count ? 'Reset challenge solves for this user' : 'No solves recorded'}">Reset Solves</button>
+          `;
         } else {
           actionButtons = `<span class="muted" style="font-family:'DM Mono';font-size:11px;">PROTECTED</span>`;
         }
@@ -251,6 +289,7 @@
           <td><code style="color:var(--text);">${u.auth_provider || 'local'}</code></td>
           <td><span style="font-family:'DM Mono';font-size:12px;color:var(--muted);">${u.role}</span></td>
           <td><span class="badge-status ${u.status || 'approved'}">${u.status || 'approved'}</span></td>
+          <td>${progression}</td>
           <td><span class="muted" style="font-family:'DM Mono';font-size:12px;">${registered}</span></td>
           <td class="actions-cell" style="justify-content:flex-end;">${actionButtons}</td>
         `;
@@ -264,6 +303,75 @@
       pendingCount.textContent = pending;
       totalUsersEl.textContent = users.length;
       renderFilteredUsers();
+    }
+
+    function renderChallenges(data) {
+      const grid = document.querySelector('#challenges-grid');
+      if (!grid) return;
+      const stages = data.stages || [];
+      if (!stages.length) {
+        grid.innerHTML = '<p class="muted" style="grid-column:1/-1;padding:20px;font-family:\'DM Mono\';text-align:center;">No challenges configured.</p>';
+        return;
+      }
+
+      grid.replaceChildren(...stages.map(s => {
+        const card = document.createElement('div');
+        card.className = 'challenge-stage-card';
+
+        let solversHtml = '<span class="muted" style="font-family:\'DM Mono\';font-size:11px;">No solvers yet</span>';
+        if (s.solvers && s.solvers.length > 0) {
+          solversHtml = `
+            <div class="solver-chips">
+              ${s.solvers.map(u => {
+                const time = u.solved_at ? new Date(u.solved_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+                return `<span class="solver-chip" title="Solved at ${u.solved_at || ''}">@${u.username} <small class="muted">${time}</small></span>`;
+              }).join('')}
+            </div>
+          `;
+        }
+
+        card.innerHTML = `
+          <div class="stage-card-header">
+            <span class="stage-num-badge">STAGE 0${s.id}</span>
+            <span class="stage-pts-badge">${s.points} PTS</span>
+          </div>
+          <div>
+            <h4 class="stage-title">${s.title}</h4>
+            <div class="stage-meta" style="margin-top:4px;">
+              <span>${s.category}</span>
+              <span>·</span>
+              <span style="color:var(--text);">${s.difficulty}</span>
+            </div>
+          </div>
+          <div class="stage-stats-row">
+            <span class="stage-solve-count">${s.solve_count} ${s.solve_count === 1 ? 'Solve' : 'Solves'}</span>
+            <span class="stage-solve-rate">${s.solve_rate}% completion</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-bar" style="width: ${Math.min(s.solve_rate, 100)}%;"></div>
+          </div>
+          <div class="stage-solvers-list">
+            <span class="solvers-label">Verified Solvers (${s.solve_count})</span>
+            ${solversHtml}
+          </div>
+        `;
+        return card;
+      }));
+    }
+
+    async function loadChallenges() {
+      try {
+        const data = await request('/api/v1/admin/challenges');
+        renderChallenges(data);
+        if (data.total_solves !== undefined) {
+          totalSolvesEl.textContent = data.total_solves;
+        }
+      } catch (err) {
+        const grid = document.querySelector('#challenges-grid');
+        if (grid) {
+          grid.innerHTML = `<p class="error" style="grid-column:1/-1;padding:20px;font-family:'DM Mono';text-align:center;">Failed to load challenge status: ${err.message}</p>`;
+        }
+      }
     }
 
     async function loadStats() {
@@ -281,7 +389,7 @@
         renderUsers(users);
         await loadStats();
       } catch (err) {
-        userRows.innerHTML = `<tr><td colspan="6" class="error" style="text-align:center;">Failed to load users: ${err.message}</td></tr>`;
+        userRows.innerHTML = `<tr><td colspan="7" class="error" style="text-align:center;">Failed to load users: ${err.message}</td></tr>`;
       }
     }
 
@@ -290,6 +398,23 @@
       if (!btn) return;
       const userId = btn.getAttribute('data-id');
       const action = btn.getAttribute('data-action');
+      const username = btn.getAttribute('data-username') || 'this user';
+
+      if (action === 'reset-challenges') {
+        const confirmed = confirm(`Are you sure you want to reset all challenge progress for ${username}?\nThis will clear their solved flags, points, and stage progression.`);
+        if (!confirmed) return;
+        btn.disabled = true;
+        try {
+          const res = await request(`/api/v1/admin/users/${userId}/reset-challenges`, { method: 'POST' });
+          alert(res.message || `Reset challenge progress for ${username}`);
+          await Promise.all([loadUsers(), loadChallenges()]);
+        } catch (err) {
+          alert(`Reset failed: ${err.message}`);
+          btn.disabled = false;
+        }
+        return;
+      }
+
       btn.disabled = true;
       try {
         await request(`/api/v1/admin/users/${userId}/${action}`, { method: 'POST' });
@@ -302,6 +427,18 @@
 
     userRows.addEventListener('click', handleUserAction);
     document.querySelector('#refresh-users').addEventListener('click', loadUsers);
+    document.querySelector('#refresh-challenges').addEventListener('click', loadChallenges);
+    document.querySelector('#reset-all-challenges').addEventListener('click', async () => {
+      const confirmed = confirm('CRITICAL CONFIRMATION: Reset ALL participant challenge solves across the entire platform?\nThis will clear all submitted flags, scores, and unlock progression for every participant.');
+      if (!confirmed) return;
+      try {
+        const res = await request('/api/v1/admin/challenges/reset-all', { method: 'POST' });
+        alert(res.message || 'All challenge solves reset.');
+        await Promise.all([loadUsers(), loadChallenges()]);
+      } catch (err) {
+        alert(`Global reset failed: ${err.message}`);
+      }
+    });
 
     filterTabs.forEach(tab => {
       tab.addEventListener('click', () => {
@@ -321,12 +458,16 @@
       try {
         await request('/api/v1/admin/health');
         document.querySelector('#api-status').textContent = 'ONLINE';
-        await loadUsers();
+        await Promise.all([loadUsers(), loadChallenges()]);
       } catch (err) {
         if (err.status === 403) {
           showDenied();
           return;
         }
+        document.querySelector('#api-status').textContent = 'OFFLINE';
+        document.querySelector('#api-status').className = 'coral-text';
+      }
+    }
         document.querySelector('#api-status').textContent = 'OFFLINE';
         document.querySelector('#api-status').className = 'coral-text';
       }
