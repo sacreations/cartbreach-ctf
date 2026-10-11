@@ -1,5 +1,4 @@
 # CartBreach: Microservice Supply-Chain Infiltration CTF Play Box
-## SLIIT BSc (Hons) in Information Technology - Year 3, Semester 1
 ### Module: IE3132 - Penetration Testing (2026) | Assignment 02
 
 CartBreach is a production-grade, 6-stage Capture The Flag (CTF) play box simulating an end-to-end supply-chain compromise of an enterprise e-commerce platform. It provides hands-on evaluation across **6 distinct cybersecurity domains**, strictly enforcing network segmentation, container hardening, automated flag validation, state recovery, and individual automated exploit chains.
