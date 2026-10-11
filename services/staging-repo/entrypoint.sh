@@ -57,6 +57,11 @@ mkdir -p /var/git/cartbreach
 git clone --bare /tmp/seed-repo /var/git/cartbreach/storefront-web.git
 rm -rf /tmp/seed-repo
 
-# Serve Git directory over HTTP on port 3001
-cd /var/git
-exec python3 -m http.server 3001
+# Configure bare repository for HTTP serving
+cd /var/git/cartbreach/storefront-web.git
+git config http.receivepack false
+git config http.uploadpack true
+git update-server-info
+
+# Launch Git Smart HTTP daemon on port 3001
+exec python3 /server.py
