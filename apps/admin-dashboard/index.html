@@ -46,7 +46,7 @@
 
       <div class="auth-panel-column">
         <!-- Admin Login -->
-        <section id="login-panel" class="auth-panel" hidden>
+        <section id="login-panel" class="auth-panel">
           <div class="auth-card-header">
             <span class="auth-dot"></span>
             <span class="auth-eyebrow">CONTROL PLANE GATEWAY</span>
@@ -464,10 +464,6 @@
           showDenied();
           return;
         }
-        document.querySelector('#api-status').textContent = 'OFFLINE';
-        document.querySelector('#api-status').className = 'coral-text';
-      }
-    }
         document.querySelector('#api-status').textContent = 'OFFLINE';
         document.querySelector('#api-status').className = 'coral-text';
       }
