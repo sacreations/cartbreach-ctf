@@ -66,6 +66,12 @@ class TestChallengeWorkflow(unittest.TestCase):
         self.assertEqual(stage["status"], "available")
         self.assertIn("briefing", stage)
         self.assertIn("target_info", stage)
+        self.assertIn("suggested_tools", stage)
+        self.assertIsInstance(stage["suggested_tools"], list)
+        self.assertGreater(len(stage["suggested_tools"]), 0)
+        self.assertIn("service", stage["target_info"])
+        self.assertIn("protocol", stage["target_info"])
+        self.assertIn("auth_context", stage["target_info"])
         self.assertIn("instructions", stage)
         self.assertIn("hints", stage)
         # Verify secret flag is not leaked in the details payload

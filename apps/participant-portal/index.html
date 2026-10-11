@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>CartBreach // Cyber-Ops Participant Portal</title>
-  <link rel="stylesheet" href="/styles.css?v=2">
+  <link rel="stylesheet" href="/styles.css?v=3">
 </head>
 <body>
   <main class="shell">
@@ -181,12 +181,13 @@
           </div>
           <iframe id="main-terminal-frame" class="terminal-frame-workbench" title="CartBreach Interactive Terminal"></iframe>
           <div class="terminal-shortcuts">
-            <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">EXPLOIT MACROS (CLICK TO COPY):</span>
-            <button type="button" class="macro-btn" data-cmd="ls -la /opt/scripts/">ls /opt/scripts/</button>
-            <button type="button" class="macro-btn" data-cmd="cat /var/log/sync_orders.log">cat sync_orders.log</button>
-            <button type="button" class="macro-btn" data-cmd="cat /home/inventory-svc/user.txt">cat user.txt</button>
-            <button type="button" class="macro-btn" data-cmd="echo 'cp /root/root.txt /tmp/root_flag.txt && chmod 777 /tmp/root_flag.txt' >> /opt/scripts/sync_orders.sh">append privesc</button>
-            <button type="button" class="macro-btn" data-cmd="cat /tmp/root_flag.txt">cat /tmp/root_flag.txt</button>
+            <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">QUICK COMMANDS:</span>
+            <button type="button" class="macro-btn" data-cmd="whoami">whoami</button>
+            <button type="button" class="macro-btn" data-cmd="id">id</button>
+            <button type="button" class="macro-btn" data-cmd="uname -a">uname -a</button>
+            <button type="button" class="macro-btn" data-cmd="ls -la /opt/">ls /opt/</button>
+            <button type="button" class="macro-btn" data-cmd="ps aux">ps aux</button>
+            <button type="button" class="macro-btn" data-cmd="cat /etc/issue">cat /etc/issue</button>
           </div>
         </div>
       </div>
@@ -215,20 +216,26 @@
             <div id="modal-briefing" class="briefing-box">Loading intel briefing…</div>
           </div>
 
-          <!-- 2. Target Telemetry & Commands -->
+          <!-- 2. Target Telemetry & Connection Info -->
           <div class="intel-section">
-            <div class="section-label violet">◈ TARGET TELEMETRY & CONNECTION INFO</div>
+            <div class="section-label violet">◈ TARGET & CONNECTION INFO</div>
             <div class="target-box">
-              <div class="target-type">Target Architecture: <strong id="modal-target-type">Web Service</strong></div>
-              <div id="modal-endpoints-container">
-                <div style="font-family:'DM Mono';font-size:11px;color:var(--dim);margin-bottom:6px;">NETWORK ENDPOINTS:</div>
+              <div class="target-meta-grid">
+                <div class="target-type">Service: <strong id="modal-target-service">Web Service</strong></div>
+                <div class="target-type">Protocol: <strong id="modal-target-protocol">HTTP</strong></div>
+                <div class="target-type">Auth Context: <strong id="modal-target-auth">None</strong></div>
+              </div>
+              <div id="modal-endpoints-container" style="margin-top:12px;">
+                <div style="font-family:'DM Mono';font-size:11px;color:var(--dim);margin-bottom:6px;">CONNECTION ENDPOINTS:</div>
                 <div id="modal-endpoints-list"></div>
               </div>
-              <div id="modal-commands-container" style="margin-top:14px;">
-                <div style="font-family:'DM Mono';font-size:11px;color:var(--dim);margin-bottom:6px;">TACTICAL COMMANDS:</div>
-                <div id="modal-commands-list"></div>
-              </div>
             </div>
+          </div>
+
+          <!-- Recommended Offensive Tools -->
+          <div class="intel-section">
+            <div class="section-label jade">◈ RECOMMENDED OFFENSIVE TOOLS</div>
+            <div id="modal-tools-list" class="tools-badges-list"></div>
           </div>
 
           <!-- Interactive Web Terminal (Stages 5 & 6) -->
@@ -248,12 +255,13 @@
               <div id="modal-terminal-wrapper" class="terminal-wrapper" hidden>
                 <iframe id="modal-terminal-frame" class="terminal-frame" title="Interactive Container Terminal"></iframe>
                 <div class="terminal-shortcuts">
-                  <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">EXPLOIT MACROS (CLICK TO COPY):</span>
-                  <button type="button" class="macro-btn" data-cmd="ls -la /opt/scripts/">ls /opt/scripts/</button>
-                  <button type="button" class="macro-btn" data-cmd="cat /var/log/sync_orders.log">cat sync_orders.log</button>
-                  <button type="button" class="macro-btn" data-cmd="cat /home/inventory-svc/user.txt">cat user.txt</button>
-                  <button type="button" class="macro-btn" data-cmd="echo 'cp /root/root.txt /tmp/root_flag.txt && chmod 777 /tmp/root_flag.txt' >> /opt/scripts/sync_orders.sh">append privesc</button>
-                  <button type="button" class="macro-btn" data-cmd="cat /tmp/root_flag.txt">cat /tmp/root_flag.txt</button>
+                  <span style="color:var(--dim);font-size:11px;font-family:'DM Mono';">QUICK COMMANDS:</span>
+                  <button type="button" class="macro-btn" data-cmd="whoami">whoami</button>
+                  <button type="button" class="macro-btn" data-cmd="id">id</button>
+                  <button type="button" class="macro-btn" data-cmd="uname -a">uname -a</button>
+                  <button type="button" class="macro-btn" data-cmd="ls -la /opt/">ls /opt/</button>
+                  <button type="button" class="macro-btn" data-cmd="ps aux">ps aux</button>
+                  <button type="button" class="macro-btn" data-cmd="cat /etc/issue">cat /etc/issue</button>
                 </div>
               </div>
             </div>
@@ -346,9 +354,11 @@
     const modalStatusBadge = document.querySelector('#modal-status-badge');
     const modalTitle = document.querySelector('#modal-title');
     const modalBriefing = document.querySelector('#modal-briefing');
-    const modalTargetType = document.querySelector('#modal-target-type');
+    const modalTargetService = document.querySelector('#modal-target-service');
+    const modalTargetProtocol = document.querySelector('#modal-target-protocol');
+    const modalTargetAuth = document.querySelector('#modal-target-auth');
     const modalEndpointsList = document.querySelector('#modal-endpoints-list');
-    const modalCommandsList = document.querySelector('#modal-commands-list');
+    const modalToolsList = document.querySelector('#modal-tools-list');
     const modalInstructions = document.querySelector('#modal-instructions');
     const modalHints = document.querySelector('#modal-hints');
     const modalSolvedBanner = document.querySelector('#modal-solved-banner');
@@ -495,7 +505,9 @@
         }
 
         modalBriefing.textContent = challenge.briefing;
-        modalTargetType.textContent = challenge.target_info?.type || 'Isolated Sandbox Node';
+        if (modalTargetService) modalTargetService.textContent = challenge.target_info?.service || 'Isolated Sandbox Node';
+        if (modalTargetProtocol) modalTargetProtocol.textContent = challenge.target_info?.protocol || 'TCP / HTTP';
+        if (modalTargetAuth) modalTargetAuth.textContent = challenge.target_info?.auth_context || 'None specified';
 
         // In-browser terminal availability (Stage 5 & 6)
         if (stageId === 5 || stageId === 6) {
@@ -513,9 +525,14 @@
         const endpoints = challenge.target_info?.endpoints || [];
         modalEndpointsList.replaceChildren(...endpoints.map(ep => createTelemetryRow(ep)));
 
-        // Render tactical commands
-        const commands = challenge.target_info?.commands || [];
-        modalCommandsList.replaceChildren(...commands.map(cmd => createTelemetryRow(cmd)));
+        // Render recommended offensive tools
+        const tools = challenge.suggested_tools || [];
+        modalToolsList.replaceChildren(...tools.map(tool => {
+          const badge = document.createElement('span');
+          badge.className = 'tool-badge';
+          badge.textContent = tool;
+          return badge;
+        }));
 
         // Render instructions
         const instructions = challenge.instructions || [];
