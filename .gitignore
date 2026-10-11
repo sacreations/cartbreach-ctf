@@ -28,3 +28,6 @@ Thumbs.db
 .idea/
 .vscode/
 *.swp
+
+# Presentation and Rehearsal Scripts (student IDs & cue cards)
+presentation-scripts/
