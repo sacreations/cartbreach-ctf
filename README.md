@@ -10,10 +10,10 @@ CartBreach is a production-grade, 6-stage Capture The Flag (CTF) play box simula
 
 | Member | Student ID (IT Number) | Full Name | Primary Assigned Role | Assigned Deliverable & Individual LO3 Automation Script |
 | :--- | :--- | :--- | :--- | :--- |
-| **Member 1** | `[IT21XXXXXX]` | `[Student 1 Full Name]` | Platform Architect & Security Administrator | Platform Architecture, Docker Network Segmentation, Container Hardening, Flag Engine & `scripts/platform_verify.py` |
-| **Member 2** | `[IT21XXXXXX]` | `[Student 2 Full Name]` | Challenge Designer A (Initial Access & Web) | Stages 1–3 Design & LO3 Solvers: `solvers/stage1_recon_solver.py`, `stage2_bola_order_exploit.py`, `stage3_crypto_hmac_forge.py` |
-| **Member 3** | `[IT21XXXXXX]` | `[Student 3 Full Name]` | Challenge Designer B (Forensics, Pivot & Privesc) | Stages 4–6 Design & LO3 Solvers: `solvers/stage4_forensics_db_carver.py`, `stage5_cmd_injection_exploit.py`, `stage6_root_privesc_exploit.py` |
-| **Member 4** | `[IT21XXXXXX]` | `[Student 4 Full Name]` | Quality Assurance & Integration Testing | End-to-End Orchestration (`solvers/solve_all_e2e.py`), Test Suite (`tests/`), Unintended Solution Defense & Assignment 01 Evolution |
+| **Member 1** | `IT24103925` | `Rathnayaka R.M.S.A` | Platform Architect & Security Administrator | Platform Architecture, Docker Network Segmentation, Container Hardening, Flag Engine & `scripts/platform_verify.py` |
+| **Member 2** | `IT24102810` | `Fernando.W.M.S` | Challenge Designer A (Initial Access & Web) | Stages 1–3 Design & LO3 Solvers: `solvers/stage1_recon_solver.py`, `stage2_bola_order_exploit.py`, `stage3_crypto_hmac_forge.py` |
+| **Member 3** | `IT24103785` | `Wimaladharma S.T.C.D` | Challenge Designer B (Forensics, Pivot & Privesc) | Stages 4–6 Design & LO3 Solvers: `solvers/stage4_forensics_db_carver.py`, `stage5_cmd_injection_exploit.py`, `stage6_root_privesc_exploit.py` |
+| **Member 4** | `IT24100490` | `Fernando G.N.N ` | Quality Assurance & Integration Testing | End-to-End Orchestration (`solvers/solve_all_e2e.py`), Test Suite (`tests/`), Unintended Solution Defense & Assignment 01 Evolution |
 
 ---
 
